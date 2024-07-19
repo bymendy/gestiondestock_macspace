@@ -1,9 +1,6 @@
 package com.macspace.gestiondestock.model;
 
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
@@ -30,6 +27,8 @@ import java.util.List;
  * </p>
  */
 @Data
+@Builder
+
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)

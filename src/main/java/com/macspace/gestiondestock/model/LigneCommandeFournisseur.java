@@ -1,14 +1,9 @@
 package com.macspace.gestiondestock.model;
 
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.math.BigDecimal;
 
 /**
  * Classe représentant une ligne de commande fournisseur dans le système de gestion de stock.
@@ -27,6 +22,8 @@ import javax.persistence.Table;
  * </p>
  */
 @Data
+@Builder
+
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
@@ -49,4 +46,10 @@ public class LigneCommandeFournisseur extends AbstractEntity {
     @ManyToOne
     @JoinColumn(name = "idcommandefournisseur")
     private CommandeFournisseur commandeFournisseur;
+
+    @Column(name = "quantite")
+    private BigDecimal quantite;
+
+    @Column(name = "prixUnitaire")
+    private BigDecimal prixUnitaire;
 }

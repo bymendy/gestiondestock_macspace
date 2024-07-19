@@ -1,14 +1,9 @@
 package com.macspace.gestiondestock.model;
 
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.time.Instant;
 
 /**
  * La classe LigneInterventionClient représente une ligne d'intervention pour un client.
@@ -40,6 +35,8 @@ import javax.persistence.Table;
  * @see InterventionClient
  */
 @Data
+@Builder
+
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
@@ -64,4 +61,16 @@ public class LigneInterventionClient extends AbstractEntity {
     @ManyToOne
     @JoinColumn(name = "idinterventionclient")
     private InterventionClient interventionClient;
+
+    /**
+     * La date d'ouverture du ticket d'intervention.
+     */
+    @Column(name = "dateouvertureTicket")
+    private Instant creationdate;
+
+    /**
+     * La description de la problématique rencontrée.
+     */
+    @Column(name = "problematique")
+    private String problematique;
 }
