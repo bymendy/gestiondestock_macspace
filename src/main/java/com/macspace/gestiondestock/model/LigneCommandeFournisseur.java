@@ -1,8 +1,9 @@
 package com.macspace.gestiondestock.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.*;
+
 import java.math.BigDecimal;
 
 /**
@@ -22,10 +23,8 @@ import java.math.BigDecimal;
  * </p>
  */
 @Data
-@Builder
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "lignecommandefournisseur")
@@ -36,7 +35,6 @@ public class LigneCommandeFournisseur extends AbstractEntity {
      * Relation ManyToOne avec l'entité {@link Produits}.
      */
     @ManyToOne
-    @JoinColumn(name = "idproduit")
     private Produits produit;
 
     /**
@@ -44,12 +42,14 @@ public class LigneCommandeFournisseur extends AbstractEntity {
      * Relation ManyToOne avec l'entité {@link CommandeFournisseur}.
      */
     @ManyToOne
-    @JoinColumn(name = "idcommandefournisseur")
     private CommandeFournisseur commandeFournisseur;
 
-    @Column(name = "quantite")
+    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
+    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
+    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
+    private Integer identreprise;
+
     private BigDecimal quantite;
 
-    @Column(name = "prixUnitaire")
     private BigDecimal prixUnitaire;
 }

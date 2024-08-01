@@ -1,8 +1,9 @@
 package com.macspace.gestiondestock.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.*;
+
 import java.util.List;
 
 /**
@@ -27,56 +28,56 @@ import java.util.List;
  * </p>
  */
 @Data
-@Builder
 
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "fournisseur")
 public class Fournisseur extends AbstractEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
     /**
      * Le nom du fournisseur.
      */
-    @Column(name = "nom")
     private String nom;
 
     /**
      * Le prénom du fournisseur.
      */
-    @Column(name = "prenom")
     private String prenom;
 
     /**
      * L'adresse du fournisseur.
      * Champ composé utilisant l'entité {@link Adresse}.
      */
-    @Embedded
+    @OneToOne
     private Adresse adresse;
 
     /**
      * La photo du fournisseur.
      */
-    @Column(name = "photo")
     private String photo;
 
     /**
      * L'adresse email du fournisseur.
      */
-    @Column(name = "mail")
     private String mail;
+
+    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
+    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
+    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
+    private Integer identreprise;
 
     /**
      * Le numéro de téléphone du fournisseur.
      */
-    @Column(name = "numTel")
     private String numTel;
 
     /**
      * La liste des commandes passées par ce fournisseur.
      * Relation OneToMany avec l'entité {@link CommandeFournisseur}.
      */
-    @OneToMany(mappedBy = "fournisseur")
+    @OneToMany
     private List<CommandeFournisseur> commandeFournisseurs;
 }

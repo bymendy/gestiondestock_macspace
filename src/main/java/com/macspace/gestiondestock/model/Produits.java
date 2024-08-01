@@ -1,13 +1,10 @@
 package com.macspace.gestiondestock.model;
 
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Classe représentant un produit dans le système de gestion de stock.
@@ -32,7 +29,6 @@ import java.math.BigDecimal;
  */
 @Data
 @Builder
-
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
@@ -43,44 +39,54 @@ public class Produits extends AbstractEntity {
     /**
      * Le code unique du produit.
      */
-    @Column(name = "codeproduit")
     private String codeProduit;
 
     /**
      * La désignation ou le nom du produit.
      */
-    @Column(name = "designation")
     private String designation;
 
     /**
      * Le prix unitaire hors taxes du produit.
      */
-    @Column(name = "prixunitaireht")
     private BigDecimal prixUnitaireHt;
 
     /**
      * Le taux de TVA appliqué au produit.
      */
-    @Column(name = "tauxtva")
     private BigDecimal tauxTva;
 
     /**
      * Le prix unitaire toutes taxes comprises du produit.
      */
-    @Column(name = "prixunitairettc")
     private BigDecimal prixUnitaireTtc;
 
     /**
      * Une photo du produit.
      */
-    @Column(name = "photo")
     private String photo;
+
+    /**
+     * Attribut technique pour l'identifiant de l'entreprise.
+     */
+    private Integer identreprise;
 
     /**
      * La catégorie à laquelle appartient le produit.
      * Relation ManyToOne avec l'entité {@link Category}.
      */
     @ManyToOne
-    @JoinColumn(name = "idcategory")
     private Category category;
+
+    @OneToMany
+    private List<LigneIntervention> ligneInterventions;
+
+    @OneToMany
+    private List<LigneInterventionClient> ligneInterventionClient;
+
+    @OneToMany
+    private List<LigneCommandeFournisseur> ligneCommandeFournisseurs;
+
+    @OneToMany
+    private List<MvtStk> mvtStks;
 }

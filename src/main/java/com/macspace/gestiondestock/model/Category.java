@@ -1,8 +1,11 @@
 package com.macspace.gestiondestock.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.*;
 
-import javax.persistence.*;
 import java.util.List;
 
 /**
@@ -12,7 +15,7 @@ import java.util.List;
  * <ul>
  *   <li>code : Le code unique de la catégorie.</li>
  *   <li>designation : La désignation de la catégorie.</li>
- *   <li>produit : La liste des produits appartenant à cette catégorie.</li>
+ *   <li>produits : La liste des produits appartenant à cette catégorie.</li>
  * </ul>
  * </p>
  * <p>
@@ -34,18 +37,21 @@ public class Category extends AbstractEntity {
     /**
      * Le code unique de la catégorie.
      */
-    @Column(name = "code")
     private String code;
 
     /**
      * La désignation de la catégorie.
      */
-    @Column(name = "designation")
     private String designation;
+
+    /**
+     * Attribut technique pour l'identifiant de l'entreprise.
+     */
+    private Integer identreprise;
 
     /**
      * La liste des produits appartenant à cette catégorie.
      */
-    @OneToMany(mappedBy = "category")
-    private List<Produits> produit;
+    @OneToMany
+    private List<Produits> produits;
 }

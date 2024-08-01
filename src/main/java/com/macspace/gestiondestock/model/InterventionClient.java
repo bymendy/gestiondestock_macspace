@@ -1,9 +1,11 @@
 package com.macspace.gestiondestock.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.*;
+
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -39,26 +41,30 @@ import java.util.List;
  * @see LigneInterventionClient
  */
 @Data
-@Builder
 
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "interventionclient")
 public class InterventionClient extends AbstractEntity {
+    public InterventionClient(){
+        this.dateIntervention = new Date();
+    }
 
     /**
      * Le code unique de l'intervention.
      */
-    @Column(name = "code")
     private String code;
 
     /**
      * La date de l'intervention.
      */
-    @Column(name = "dateIntervention")
-    private Instant dateIntervention;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date dateIntervention;
+
+    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
+    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
+    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
+    private Integer identreprise;
 
     /**
      * Le client associé à cette intervention.
@@ -66,7 +72,6 @@ public class InterventionClient extends AbstractEntity {
      * <p>La relation Many-to-One signifie que plusieurs interventions peuvent être liées à un seul client.</p>
      */
     @ManyToOne
-    @JoinColumn(name = "idclient")
     private Client client;
 
     /**
@@ -74,6 +79,6 @@ public class InterventionClient extends AbstractEntity {
      *
      * <p>La relation One-to-Many signifie qu'une intervention peut avoir plusieurs lignes d'intervention.</p>
      */
-    @OneToMany(mappedBy = "interventionClient")
+    @OneToMany
     private List<LigneInterventionClient> ligneInterventionClients;
 }

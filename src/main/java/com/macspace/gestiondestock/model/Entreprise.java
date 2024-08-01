@@ -1,14 +1,12 @@
 package com.macspace.gestiondestock.model;
 
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+
 import java.util.List;
 
 /**
@@ -34,59 +32,55 @@ import java.util.List;
  * </p>
  */
 @Data
-@Builder
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 @Table(name = "entreprise")
 public class Entreprise extends AbstractEntity {
 
     /**
      * Le nom de l'entreprise.
      */
-    @Column(name = "nom")
     private String nom;
 
     /**
      * Une description de l'entreprise.
      */
-    @Column(name = "description")
     private String description;
+
+    @Embedded
+    private Adresse adresse;
+
 
     /**
      * Le code fiscal de l'entreprise.
      */
-    @Column(name = "codefiscal")
     private String codeFiscal;
 
     /**
      * Une photo de l'entreprise.
      */
-    @Column(name = "photo")
     private String photo;
 
     /**
      * L'adresse email de l'entreprise.
      */
-    @Column(name = "email")
     private String email;
 
     /**
      * Le numéro de téléphone de l'entreprise.
      */
-    @Column(name = "numTel")
     private String numTel;
 
     /**
      * Le site web de l'entreprise.
      */
-    @Column(name = "siteweb")
     private String siteWeb;
 
     /**
      * La liste des utilisateurs associés à l'entreprise.
      * Relation OneToMany avec l'entité {@link Utilisateur}.
      */
-    @OneToMany(mappedBy = "entreprise")
+    @OneToMany
     private List<Utilisateur> utilisateurs;
 }

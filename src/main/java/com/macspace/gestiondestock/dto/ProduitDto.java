@@ -1,12 +1,12 @@
 package com.macspace.gestiondestock.dto;
 
 import com.macspace.gestiondestock.model.Category;
+import com.macspace.gestiondestock.model.Produits;
 import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Data;
 
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+
 import java.math.BigDecimal;
 
 @Builder
@@ -49,4 +49,47 @@ public class ProduitDto {
      * Relation ManyToOne avec l'entité {@link Category}.
      */
     private CategoryDto category;
+
+    /**
+     * Convertit une entité Produit en DTO ProduitDto.
+     *
+     * @param produit L'entité Produit à convertir.
+     * @return Le DTO ProduitDto correspondant.
+     */
+    public static ProduitDto fromEntity(Produits produit) {
+        if (produit == null) {
+            return null;
+        }
+
+        return ProduitDto.builder()
+                .id(produit.getId())
+                .codeProduit(produit.getCodeProduit())
+                .designation(produit.getDesignation())
+                .prixUnitaireHt(produit.getPrixUnitaireHt())
+                .prixUnitaireTtc(produit.getPrixUnitaireTtc())
+
+                // Ajoutez d'autres champs si nécessaire
+                .build();
+    }
+
+    /**
+     * Convertit un DTO ProduitDto en entité Produit.
+     *
+     * @param produitDto Le DTO ProduitDto à convertir.
+     * @return L'entité Produit correspondant.
+     */
+    public static Produits toEntity(ProduitDto produitDto) {
+        if (produitDto == null) {
+            return null;
+        }
+
+        Produits produit = new Produits();
+        produit.setId(produitDto.getId());
+        produit.setCodeProduit(produitDto.getCodeProduit());
+        produit.setDesignation(produitDto.getDesignation());
+        produit.setPrixUnitaireTtc(produitDto.getPrixUnitaireTtc());
+        // Ajoutez d'autres champs si nécessaire
+
+        return produit;
+    }
 }

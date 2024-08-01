@@ -1,9 +1,9 @@
 package com.macspace.gestiondestock.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import java.io.Serializable;
 
 /**
  * Classe représentant une adresse, utilisée comme composant intégré dans d'autres entités.
@@ -25,40 +25,37 @@ import javax.persistence.Embeddable;
  * </p>
  */
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode
 @Embeddable
-public class Adresse extends AbstractEntity {
+public class Adresse implements Serializable {
+
 
     /**
      * La première ligne de l'adresse.
      */
-    @Column(name = "adresse1")
     private String adresse1;
 
     /**
      * La deuxième ligne de l'adresse.
      */
-    @Column(name = "adresse2")
     private String adresse2;
+
+
 
     /**
      * La ville de l'adresse.
      */
-    @Column(name = "ville")
     private String ville;
 
     /**
      * Le code postal de l'adresse.
      */
-    @Column(name = "codepostale")
     private String codePostale;
 
     /**
      * Le pays de l'adresse.
      */
-    @Column(name = "pays")
     private String pays;
 }

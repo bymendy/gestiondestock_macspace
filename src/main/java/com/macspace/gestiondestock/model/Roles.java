@@ -1,8 +1,8 @@
 package com.macspace.gestiondestock.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.*;
 
 /**
  * Classe représentant un rôle dans le système de gestion de stock.
@@ -21,9 +21,7 @@ import javax.persistence.*;
  * </p>
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "roles")
@@ -32,13 +30,16 @@ public class Roles extends AbstractEntity {
     /**
      * Le nom du rôle.
      */
-    @Column(name = "rolename")
     private String roleName;
+
+    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
+    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
+    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
+    private Integer identreprise;
 
     /**
      * L'utilisateur associé à ce rôle.
      */
     @ManyToOne
-    @JoinColumn(name = "idutilisateur")
     private Utilisateur utilisateur;
 }

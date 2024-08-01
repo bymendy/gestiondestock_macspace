@@ -1,8 +1,9 @@
 package com.macspace.gestiondestock.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.*;
+
 import java.time.Instant;
 import java.util.List;
 
@@ -25,10 +26,7 @@ import java.util.List;
  * </p>
  */
 @Data
-@Builder
-
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "commandefournisseur")
@@ -37,25 +35,27 @@ public class CommandeFournisseur extends AbstractEntity {
     /**
      * Le code de la commande fournisseur.
      */
-    @Column(name = "code")
     private String code;
 
     /**
      * La date à laquelle la commande a été passée.
      */
-    @Column(name = "datecommande")
     private Instant dateCommande;
+
+    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
+    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
+    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
+    private Integer identreprise;
 
     /**
      * Le fournisseur associé à la commande.
      */
     @ManyToOne
-    @JoinColumn(name = "idfournisseur")
     private Fournisseur fournisseur;
 
     /**
      * La liste des lignes de commande associées à la commande fournisseur.
      */
-    @OneToMany(mappedBy = "commandeFournisseur")
+    @OneToMany
     private List<LigneCommandeFournisseur> ligneCommandeFournisseurs;
 }

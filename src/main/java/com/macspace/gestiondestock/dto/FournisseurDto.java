@@ -2,12 +2,14 @@ package com.macspace.gestiondestock.dto;
 
 import com.macspace.gestiondestock.model.Adresse;
 import com.macspace.gestiondestock.model.CommandeFournisseur;
+import lombok.Builder;
+import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.OneToMany;
+
 import java.util.List;
 
+@Data
+@Builder
 public class FournisseurDto {
     private Integer id;
 

@@ -2,9 +2,10 @@ package com.macspace.gestiondestock.model;
 
 import java.io.Serializable;
 import java.time.Instant;
-import javax.persistence.*;
+import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
@@ -46,6 +47,12 @@ public abstract class AbstractEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    //public AbstractEntity(){
+    //   this.creationDate = new Date();
+    //   this.lastUpdateDate = new Date();
+    //}
+
+
     /**
      * Identifiant unique de l'entité.
      * Généré automatiquement par la base de données.
@@ -59,16 +66,19 @@ public abstract class AbstractEntity implements Serializable {
      * Gérée automatiquement par Spring Data JPA.
      */
     @CreatedDate
-    @Column(name = "creationDate", nullable = false, updatable = false)
     @JsonIgnore
     private Instant creationDate;
+
+    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
+    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
+    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
+    private Integer identreprise;
 
     /**
      * Date de la dernière modification de l'entité.
      * Gérée automatiquement par Spring Data JPA.
      */
     @LastModifiedDate
-    @Column(name = "lastModifiedDate")
     @JsonIgnore
     private Instant lastUpdateDate;
 }

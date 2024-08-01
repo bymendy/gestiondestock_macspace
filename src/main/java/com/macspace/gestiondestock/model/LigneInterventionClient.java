@@ -1,9 +1,11 @@
 package com.macspace.gestiondestock.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.*;
+
 import java.time.Instant;
+import java.util.Date;
 
 /**
  * La classe LigneInterventionClient représente une ligne d'intervention pour un client.
@@ -35,22 +37,22 @@ import java.time.Instant;
  * @see InterventionClient
  */
 @Data
-@Builder
 
-@NoArgsConstructor
-@AllArgsConstructor
+
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "ligneinterventionclient")
 public class LigneInterventionClient extends AbstractEntity {
 
+    //public LigneInterventionClient(){
+    //   this.creationdate = new Date();
+    //}
     /**
      * L'intervention associée à cette ligne d'intervention client.
      *
      * <p>La relation Many-to-One signifie que plusieurs lignes d'intervention client peuvent être liées à une seule intervention.</p>
      */
     @ManyToOne
-    @JoinColumn(name = "idintervention")
     private Interventions interventions;
 
     /**
@@ -59,18 +61,21 @@ public class LigneInterventionClient extends AbstractEntity {
      * <p>La relation Many-to-One signifie que plusieurs lignes d'intervention client peuvent être liées à une seule intervention client.</p>
      */
     @ManyToOne
-    @JoinColumn(name = "idinterventionclient")
     private InterventionClient interventionClient;
+
+    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
+    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
+    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
+    private Integer identreprise;
 
     /**
      * La date d'ouverture du ticket d'intervention.
      */
-    @Column(name = "dateouvertureTicket")
-    private Instant creationdate;
+    @Column(name = "creation_date") // Renommage explicite de la colonne
+    private Instant creationDate;
 
     /**
      * La description de la problématique rencontrée.
      */
-    @Column(name = "problematique")
     private String problematique;
 }

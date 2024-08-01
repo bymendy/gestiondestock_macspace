@@ -1,8 +1,9 @@
 package com.macspace.gestiondestock.model;
 
+import jakarta.persistence.*;
 import lombok.*;
 
-import javax.persistence.*;
+
 import java.util.List;
 
 /**
@@ -27,15 +28,15 @@ import java.util.List;
  * </p>
  */
 @Data
-@Builder
-
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "client")
 public class Client extends AbstractEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
     /**
      * Le nom du client.
      */
@@ -52,7 +53,8 @@ public class Client extends AbstractEntity {
      * L'adresse du client.
      * Utilise l'entité {@link Adresse} en tant que champ composé.
      */
-    @Embedded
+
+    @OneToOne
     private Adresse adresse;
 
     /**
@@ -64,18 +66,22 @@ public class Client extends AbstractEntity {
     /**
      * L'adresse e-mail du client.
      */
-    @Column(name = "mail")
-    private String mail;
+    private String email;
+
+    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
+    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
+    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
+    private Integer identreprise;
+
 
     /**
      * Le numéro de téléphone du client.
      */
-    @Column(name = "numTel")
     private String numTel;
 
     /**
      * La liste des interventions liées au client.
      */
-    @OneToMany(mappedBy = "client")
+    @OneToMany
     private List<InterventionClient> interventionClients;
 }

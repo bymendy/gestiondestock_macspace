@@ -5,9 +5,7 @@ import com.macspace.gestiondestock.model.Produits;
 import lombok.Builder;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+
 import java.math.BigDecimal;
 
 

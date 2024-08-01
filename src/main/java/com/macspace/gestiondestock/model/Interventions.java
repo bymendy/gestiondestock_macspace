@@ -1,10 +1,10 @@
 package com.macspace.gestiondestock.model;
 
+import jakarta.persistence.*;
 import lombok.*;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+
 import java.time.Instant;
+import java.util.Date;
 
 /**
  * Classe représentant une intervention dans le système de gestion de stock.
@@ -24,29 +24,32 @@ import java.time.Instant;
  * </p>
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "interventions")
 public class Interventions extends AbstractEntity {
-
+    // public Interventions(){
+    //   this.dateIntervention = new Date();
+    //}
     /**
      * Le code unique de l'intervention.
      */
-    @Column(name = "code")
     private String code;
 
     /**
      * La date de l'intervention.
      */
-    @Column(name = "dateintervention")
-    private Instant dateIntervention;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date dateIntervention;
+
+    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
+    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
+    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
+    private Integer identreprise;
 
     /**
      * La description de la problématique rencontrée.
      */
-    @Column(name = "problematique")
     private String problematique;
 }
