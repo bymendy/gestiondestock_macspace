@@ -40,13 +40,11 @@ public class Client extends AbstractEntity {
     /**
      * Le nom du client.
      */
-    @Column(name = "nom")
     private String nom;
 
     /**
      * Le prénom du client.
      */
-    @Column(name = "prenom")
     private String prenom;
 
     /**
@@ -60,7 +58,6 @@ public class Client extends AbstractEntity {
     /**
      * La photo du client.
      */
-    @Column(name = "photo")
     private String photo;
 
     /**
@@ -71,7 +68,7 @@ public class Client extends AbstractEntity {
     // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
     // si on parle de conception UMl ce n'est pas 100% correct de le mettre
     // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
-    private Integer identreprise;
+    private Integer idEntreprise;
 
 
     /**

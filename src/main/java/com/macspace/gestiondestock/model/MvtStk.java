@@ -25,7 +25,8 @@ import java.time.Instant;
  * </p>
  */
 @Data
-
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "mvtstk") // Mouvement de stock
@@ -50,10 +51,16 @@ public class MvtStk extends AbstractEntity {
     // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
     // si on parle de conception UMl ce n'est pas 100% correct de le mettre
     // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
-    private Integer identreprise;
+    private Integer idEntreprise;
+
+    @Enumerated(EnumType.STRING)
+    private SourceMvtStk sourceMvt;
 
     /**
      * Le type de mouvement de stock (entrée, sortie, etc.).
      */
     private TypeMvtStk typeMvt;
+
+
+
 }

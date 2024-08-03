@@ -69,7 +69,7 @@ public class Produits extends AbstractEntity {
     /**
      * Attribut technique pour l'identifiant de l'entreprise.
      */
-    private Integer identreprise;
+    private Integer idEntreprise;
 
     /**
      * La catégorie à laquelle appartient le produit.

@@ -13,7 +13,7 @@ import java.time.Instant;
 public class LigneInterventionDto {
     private Integer id;
 
-
+    private String numeroContrat;
 
     private InterventionsDto interventions;
 

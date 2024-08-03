@@ -1,10 +1,7 @@
 package com.macspace.gestiondestock.model;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Data;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 import java.util.List;
@@ -32,12 +29,16 @@ import java.util.List;
  * </p>
  */
 @Data
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@Entity
 @Table(name = "entreprise")
 public class Entreprise extends AbstractEntity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
     /**
      * Le nom de l'entreprise.
      */
@@ -48,7 +49,7 @@ public class Entreprise extends AbstractEntity {
      */
     private String description;
 
-    @Embedded
+    @OneToOne
     private Adresse adresse;
 
 

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
 
@@ -55,6 +56,8 @@ public class LigneInterventionClient extends AbstractEntity {
     @ManyToOne
     private Interventions interventions;
 
+    private String numeroContrat;
+
     /**
      * L'intervention client associée à cette ligne d'intervention client.
      *
@@ -63,10 +66,15 @@ public class LigneInterventionClient extends AbstractEntity {
     @ManyToOne
     private InterventionClient interventionClient;
 
+    private BigDecimal quantite;
+
+
+    @ManyToOne
+    private Produits produit;
     // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
     // si on parle de conception UMl ce n'est pas 100% correct de le mettre
     // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
-    private Integer identreprise;
+    private Integer idEntreprise;
 
     /**
      * La date d'ouverture du ticket d'intervention.

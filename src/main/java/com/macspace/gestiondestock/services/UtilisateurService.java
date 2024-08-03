@@ -1,5 +1,6 @@
 package com.macspace.gestiondestock.services;
 
+import com.macspace.gestiondestock.dto.ChangerMotDePasseUtilisateurDto;
 import com.macspace.gestiondestock.dto.FournisseurDto;
 import com.macspace.gestiondestock.dto.UtilisateurDto;
 
@@ -13,4 +14,8 @@ public interface UtilisateurService {
     List<UtilisateurDto> findAll();
 
     void delete(Integer id);
+
+    //UtilisateurDto findByEmail(String email);
+
+    //UtilisateurDto changerMotDePasse(ChangerMotDePasseUtilisateurDto dto);
 }
