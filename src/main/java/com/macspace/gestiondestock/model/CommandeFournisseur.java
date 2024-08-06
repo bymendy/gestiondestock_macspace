@@ -42,6 +42,9 @@ public class CommandeFournisseur extends AbstractEntity {
      */
     private Instant dateCommande;
 
+    @Enumerated(EnumType.STRING)
+    private EtatCommande etatCommande;
+
     // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
     // si on parle de conception UMl ce n'est pas 100% correct de le mettre
     // si on parle de implementation technique, cette id va simplifier beaucoup les tâches

@@ -24,7 +24,8 @@ import java.util.Date;
  * </p>
  */
 @Data
-
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "ligneintervention")
@@ -46,6 +47,9 @@ public class LigneIntervention extends AbstractEntity {
      */
     @Column(name = "creation_date") // Renommage explicite de la colonne
     private Instant creationDate;
+
+    @ManyToOne
+    private Produits produit;
 
     // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
     // si on parle de conception UMl ce n'est pas 100% correct de le mettre

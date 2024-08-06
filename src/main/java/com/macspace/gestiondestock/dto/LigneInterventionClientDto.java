@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.macspace.gestiondestock.model.InterventionClient;
 import com.macspace.gestiondestock.model.Interventions;
 import com.macspace.gestiondestock.model.LigneInterventionClient;
+import jakarta.persistence.ManyToOne;
 import lombok.Builder;
 import lombok.Data;
 
@@ -29,6 +30,7 @@ public class LigneInterventionClientDto {
     /**
      * Les interventions associées à la ligne d'intervention.
      */
+
     private InterventionsDto interventions;
 
     /**

@@ -1,6 +1,7 @@
 package com.macspace.gestiondestock.dto;
 
 import com.macspace.gestiondestock.model.CommandeFournisseur;
+import com.macspace.gestiondestock.model.LigneCommandeFournisseur;
 import com.macspace.gestiondestock.model.Produits;
 import lombok.Builder;
 import lombok.Data;
@@ -22,4 +23,33 @@ public class LigneCommandeFournisseurDto {
     private BigDecimal quantite;
 
     private BigDecimal prixUnitaire;
+
+    private Integer idEntreprise;
+
+    public static LigneCommandeFournisseurDto fromEntity(LigneCommandeFournisseur ligneCommandeFournisseur) {
+        if (ligneCommandeFournisseur == null) {
+            return null;
+        }
+        return LigneCommandeFournisseurDto.builder()
+                .id(ligneCommandeFournisseur.getId())
+                .produit(ProduitDto.fromEntity(ligneCommandeFournisseur.getProduit()))
+                .quantite(ligneCommandeFournisseur.getQuantite())
+                .prixUnitaire(ligneCommandeFournisseur.getPrixUnitaire())
+                .idEntreprise(ligneCommandeFournisseur.getIdEntreprise())
+                .build();
+    }
+
+    public static LigneCommandeFournisseur toEntity(LigneCommandeFournisseurDto dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        LigneCommandeFournisseur ligneCommandeFournisseur = new LigneCommandeFournisseur();
+        ligneCommandeFournisseur.setId(dto.getId());
+        ligneCommandeFournisseur.setProduit(ProduitDto.toEntity(dto.getProduit()));
+        ligneCommandeFournisseur.setPrixUnitaire(dto.getPrixUnitaire());
+        ligneCommandeFournisseur.setQuantite(dto.getQuantite());
+        ligneCommandeFournisseur.setIdEntreprise(dto.getIdEntreprise());
+        return ligneCommandeFournisseur;
+    }
 }

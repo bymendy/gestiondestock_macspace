@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Classe représentant une intervention dans le système de gestion de stock.
@@ -52,4 +53,7 @@ public class Interventions extends AbstractEntity {
      * La description de la problématique rencontrée.
      */
     private String problematique;
+
+    @OneToMany
+    private List<LigneIntervention> ligneInterventions;
 }

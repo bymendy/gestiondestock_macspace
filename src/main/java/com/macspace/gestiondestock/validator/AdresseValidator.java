@@ -6,6 +6,11 @@ import java.util.List;
 import com.macspace.gestiondestock.dto.AdresseDto;
 import org.springframework.util.StringUtils;
 
+/**
+ * La classe AdresseValidator fournit des méthodes pour valider les objets {@link AdresseDto}.
+ * <p>
+ * La validation permet de s'assurer que les données de l'entité respectent certaines règles de cohérence et d'intégrité.
+ */
 public class AdresseValidator {
 
     public static List<String> validate(AdresseDto adresseDto) {
