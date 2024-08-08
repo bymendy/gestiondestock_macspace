@@ -1,4 +1,5 @@
 package com.macspace.gestiondestock.model;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -58,7 +59,8 @@ public class Utilisateur extends AbstractEntity{
     @ManyToOne
     private Entreprise entreprise;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "utilisateur")
+    @JsonIgnore
     private List<Roles> roles;
 
 }

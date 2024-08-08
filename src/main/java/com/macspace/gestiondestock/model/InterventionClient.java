@@ -42,6 +42,7 @@ import java.util.List;
  */
 @Data
 
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "interventionclient")

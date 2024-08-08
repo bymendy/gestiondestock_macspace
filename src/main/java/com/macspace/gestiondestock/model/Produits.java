@@ -28,7 +28,6 @@ import java.util.List;
  * </p>
  */
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)

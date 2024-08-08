@@ -25,7 +25,8 @@ import java.util.List;
  * </p>
  */
 @Data
-
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "interventions")

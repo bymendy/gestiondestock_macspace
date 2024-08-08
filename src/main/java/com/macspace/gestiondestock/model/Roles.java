@@ -32,10 +32,6 @@ public class Roles extends AbstractEntity {
      */
     private String roleName;
 
-    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
-    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
-    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
-    private Integer idEntreprise;
 
     /**
      * L'utilisateur associé à ce rôle.

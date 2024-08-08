@@ -38,8 +38,8 @@ import java.util.Date;
  * @see InterventionClient
  */
 @Data
-
-
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "ligneinterventionclient")

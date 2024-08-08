@@ -23,8 +23,8 @@ import java.math.BigDecimal;
  * </p>
  */
 @Data
-
-
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "lignecommandefournisseur")

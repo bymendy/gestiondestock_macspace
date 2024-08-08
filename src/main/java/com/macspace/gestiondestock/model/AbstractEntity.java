@@ -66,7 +66,6 @@ public abstract class AbstractEntity implements Serializable {
      * Gérée automatiquement par Spring Data JPA.
      */
     @CreatedDate
-    @JsonIgnore
     private Instant creationDate;
 
     // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
@@ -79,6 +78,5 @@ public abstract class AbstractEntity implements Serializable {
      * Gérée automatiquement par Spring Data JPA.
      */
     @LastModifiedDate
-    @JsonIgnore
     private Instant lastUpdateDate;
 }
