@@ -145,6 +145,7 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- junit pour les test unitaire-->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -178,7 +179,7 @@
 							<locations>
 								<location>com.macspace.gestiondestock.controller.api</location>
 							</locations>
-							<basePath>http://localhost:8080</basePath>
+							<basePath>http://localhost:3306</basePath>
 							<info>
 								<title>Swagger Api Documentation for Gestion de stock application</title>
 								<version>${project.version}</version>

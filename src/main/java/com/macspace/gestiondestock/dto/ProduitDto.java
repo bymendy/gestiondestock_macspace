@@ -2,13 +2,18 @@ package com.macspace.gestiondestock.dto;
 
 import com.macspace.gestiondestock.model.Category;
 import com.macspace.gestiondestock.model.Produits;
-import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Data;
 
-
 import java.math.BigDecimal;
 
+/**
+ * Data Transfer Object (DTO) pour les produits.
+ * <p>
+ * Cette classe est utilisée pour transférer les informations relatives aux produits dans l'application.
+ * Elle contient des données telles que le code du produit, sa désignation, les prix, et la catégorie associée.
+ * </p>
+ */
 @Builder
 @Data
 public class ProduitDto {
@@ -51,10 +56,10 @@ public class ProduitDto {
     private CategoryDto category;
 
     /**
-     * Convertit une entité Produit en DTO ProduitDto.
+     * Convertit une entité {@link Produits} en DTO {@link ProduitDto}.
      *
-     * @param produit L'entité Produit à convertir.
-     * @return Le DTO ProduitDto correspondant.
+     * @param produit L'entité {@link Produits} à convertir.
+     * @return Le DTO {@link ProduitDto} correspondant, ou {@code null} si l'entité est {@code null}.
      */
     public static ProduitDto fromEntity(Produits produit) {
         if (produit == null) {
@@ -67,16 +72,15 @@ public class ProduitDto {
                 .designation(produit.getDesignation())
                 .prixUnitaireHt(produit.getPrixUnitaireHt())
                 .prixUnitaireTtc(produit.getPrixUnitaireTtc())
-
                 // Ajoutez d'autres champs si nécessaire
                 .build();
     }
 
     /**
-     * Convertit un DTO ProduitDto en entité Produit.
+     * Convertit un DTO {@link ProduitDto} en entité {@link Produits}.
      *
-     * @param produitDto Le DTO ProduitDto à convertir.
-     * @return L'entité Produit correspondant.
+     * @param produitDto Le DTO {@link ProduitDto} à convertir.
+     * @return L'entité {@link Produits} correspondant, ou {@code null} si le DTO est {@code null}.
      */
     public static Produits toEntity(ProduitDto produitDto) {
         if (produitDto == null) {

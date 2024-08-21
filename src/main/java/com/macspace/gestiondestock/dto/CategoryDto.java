@@ -32,6 +32,9 @@ public class CategoryDto {
      */
     private String designation;
 
+    private Integer idEntreprise;
+
+
     /**
      * La liste des produits appartenant à cette catégorie.
      * Ignorée lors de la sérialisation JSON pour éviter les références circulaires.
@@ -54,6 +57,8 @@ public class CategoryDto {
                 .id(category.getId())
                 .code(category.getCode())
                 .designation(category.getDesignation())
+                .idEntreprise(category.getIdEntreprise())
+
                 .produits(category.getProduits() != null ? category.getProduits().stream()
                         .map(ProduitDto::fromEntity)
                         .toList() : null)
@@ -75,6 +80,7 @@ public class CategoryDto {
         category.setId(categoryDto.getId());
         category.setCode(categoryDto.getCode());
         category.setDesignation(categoryDto.getDesignation());
+        category.setIdEntreprise(categoryDto.getIdEntreprise());
         category.setProduits(categoryDto.getProduits() != null ? categoryDto.getProduits().stream()
                 .map(ProduitDto::toEntity)
                 .toList() : null);

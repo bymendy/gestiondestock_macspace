@@ -7,10 +7,17 @@ import com.macspace.gestiondestock.model.Utilisateur;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Data Transfer Object (DTO) pour les utilisateurs.
+ * <p>
+ * Cette classe est utilisée pour transférer les données des utilisateurs entre les couches de l'application.
+ * Elle contient des informations telles que le nom, le prénom, l'email, le mot de passe, l'adresse, la photo,
+ * l'entreprise associée et les rôles de l'utilisateur.
+ * </p>
+ */
 @Data
 @Builder
 public class UtilisateurDto {
@@ -36,6 +43,12 @@ public class UtilisateurDto {
 
     private List<RolesDto> roles;
 
+    /**
+     * Convertit une entité {@link Utilisateur} en un DTO {@link UtilisateurDto}.
+     *
+     * @param utilisateur L'entité utilisateur à convertir.
+     * @return Un DTO représentant l'utilisateur, ou {@code null} si l'entité est {@code null}.
+     */
     public static UtilisateurDto fromEntity(Utilisateur utilisateur) {
         if (utilisateur == null) {
             return null;
@@ -60,6 +73,12 @@ public class UtilisateurDto {
                 .build();
     }
 
+    /**
+     * Convertit un DTO {@link UtilisateurDto} en une entité {@link Utilisateur}.
+     *
+     * @param dto Le DTO à convertir.
+     * @return Une entité utilisateur correspondant au DTO, ou {@code null} si le DTO est {@code null}.
+     */
     public static Utilisateur toEntity(UtilisateurDto dto) {
         if (dto == null) {
             return null;

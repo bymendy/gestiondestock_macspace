@@ -10,7 +10,11 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
- * Objet de Transfert de Données pour {@link MvtStk}.
+ * Objet de Transfert de Données (DTO) pour l'entité {@link MvtStk}.
+ * <p>
+ * Ce DTO est utilisé pour transférer les informations liées aux mouvements de stock, y compris
+ * la date, la quantité, le produit associé, le type et la source du mouvement, ainsi que l'identifiant de l'entreprise.
+ * </p>
  */
 @Data
 @Builder

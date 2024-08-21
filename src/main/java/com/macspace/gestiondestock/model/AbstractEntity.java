@@ -2,11 +2,9 @@ package com.macspace.gestiondestock.model;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -47,12 +45,6 @@ public abstract class AbstractEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    //public AbstractEntity(){
-    //   this.creationDate = new Date();
-    //   this.lastUpdateDate = new Date();
-    //}
-
-
     /**
      * Identifiant unique de l'entité.
      * Généré automatiquement par la base de données.
@@ -66,11 +58,12 @@ public abstract class AbstractEntity implements Serializable {
      * Gérée automatiquement par Spring Data JPA.
      */
     @CreatedDate
+    @Column(nullable = false, updatable = false)
     private Instant creationDate;
 
-    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
-    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
-    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
+    /**
+     * Attribut technique à ajouter pour chaque entité sauf pour Entreprise et Utilisateur.
+     */
     private Integer idEntreprise;
 
     /**
@@ -78,5 +71,25 @@ public abstract class AbstractEntity implements Serializable {
      * Gérée automatiquement par Spring Data JPA.
      */
     @LastModifiedDate
+    @Column(nullable = false)
     private Instant lastUpdateDate;
+
+    /**
+     * Méthode appelée avant que l'entité ne soit insérée dans la base de données.
+     * Assure que la date de création est bien initialisée.
+     */
+    @PrePersist
+    protected void onCreate() {
+        this.creationDate = Instant.now();
+        this.lastUpdateDate = Instant.now();
+    }
+
+    /**
+     * Méthode appelée avant que l'entité ne soit mise à jour dans la base de données.
+     * Met à jour la date de la dernière modification.
+     */
+    @PreUpdate
+    protected void onUpdate() {
+        this.lastUpdateDate = Instant.now();
+    }
 }
