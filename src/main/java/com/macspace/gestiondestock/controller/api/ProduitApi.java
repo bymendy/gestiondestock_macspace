@@ -1,107 +1,159 @@
 package com.macspace.gestiondestock.controller.api;
 
 import com.macspace.gestiondestock.dto.ProduitDto;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
 import static com.macspace.gestiondestock.utils.Constants.APP_ROOT;
 
 /**
- * Interface pour les opérations CRUD sur les produits.
- * <p>
- * Cette interface définit les points d'entrée de l'API REST pour la gestion des produits.
- * </p>
+ * Interface définissant les endpoints de gestion des produits dans MacSpace.
  */
-@Api(APP_ROOT + "/produits")
+@Tag(name = "Produits",
+        description = "API de gestion des produits de sécurité")
 public interface ProduitApi {
 
     /**
-     * Enregistre un nouveau produit ou met à jour un produit existant.
-     * <p>
-     * Cette méthode permet de créer ou de mettre à jour un produit dans la base de données.
-     * </p>
+     * Enregistre ou met à jour un produit.
      *
-     * @param dto Le produit à enregistrer ou à mettre à jour.
-     * @return Le produit enregistré ou mis à jour.
+     * @param dto Le DTO du produit à enregistrer.
+     * @return Le DTO du produit enregistré.
      */
-    @PostMapping(value = APP_ROOT + "/produits/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Enregistrer un produit ", notes = "Cette methode permet d'enregistrer ou modifier un produit", response = ProduitDto.class)
+    @Operation(summary = "Enregistrer un produit",
+            description = "Permet d'enregistrer ou modifier un produit")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "L'objet produit céer / modifier"),
-            @ApiResponse(code = 400, message = "L'objet produit n'est pas valide")
-
+            @ApiResponse(responseCode = "200",
+                    description = "Produit créé ou modifié"),
+            @ApiResponse(responseCode = "400",
+                    description = "Données invalides")
     })
+    @PostMapping(value = APP_ROOT + "/produits/create",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     ProduitDto save(@RequestBody ProduitDto dto);
 
     /**
-     * Recherche un produit par son identifiant unique.
-     * <p>
-     * Cette méthode permet de récupérer un produit à partir de son identifiant.
-     * </p>
+     * Recherche un produit par son identifiant.
      *
-     * @param id L'identifiant unique du produit.
-     * @return Le produit correspondant à l'identifiant, ou null si aucun produit n'est trouvé.
+     * @param id L'identifiant du produit.
+     * @return Le DTO du produit trouvé.
      */
-    @GetMapping(value = APP_ROOT + "/produits/{idProduit}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Rechercher un produit par ID", notes = "Cette methode permet de chercher un produit par son ID", response = ProduitDto.class)
+    @Operation(summary = "Rechercher un produit par ID",
+            description = "Permet de chercher un produit par son identifiant")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Le produit a ete trouver dans la base de donnée "),
-            @ApiResponse(code = 400, message = "Aucun produit n'existe dans la base de donnée avec l'ID fournie")
-
+            @ApiResponse(responseCode = "200", description = "Produit trouvé"),
+            @ApiResponse(responseCode = "404", description = "Produit non trouvé")
     })
+    @GetMapping(value = APP_ROOT + "/produits/{idProduit}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     ProduitDto findById(@PathVariable("idProduit") Integer id);
 
     /**
-     * Recherche un produit par son code unique.
-     * <p>
-     * Cette méthode permet de récupérer un produit à partir de son code unique.
-     * </p>
+     * Recherche un produit par son code.
      *
-     * @param codeProduit Le code unique du produit.
-     * @return Le produit correspondant au code, ou null si aucun produit n'est trouvé.
+     * @param codeProduit Le code du produit.
+     * @return Le DTO du produit trouvé.
      */
-    @GetMapping(value = APP_ROOT + "/produits/code/{codeProduit}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Rechercher un produit par CODE", notes = "Cette methode permet de chercher un produit par son CODE", response = ProduitDto.class)
+    @Operation(summary = "Rechercher un produit par code",
+            description = "Permet de chercher un produit par son code unique")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Le produit a ete trouver dans la base de donnée "),
-            @ApiResponse(code = 400, message = "Aucun produit n'existe dans la base de donnée avec le CODE fournie")
-
+            @ApiResponse(responseCode = "200", description = "Produit trouvé"),
+            @ApiResponse(responseCode = "404", description = "Produit non trouvé")
     })
-    ProduitDto findByCodeProduit(@PathVariable("codeProduit") String codeProduit);
+    @GetMapping(value = APP_ROOT + "/produits/code/{codeProduit}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    ProduitDto findByCodeProduit(
+            @PathVariable("codeProduit") String codeProduit);
 
     /**
-     * Récupère la liste de tous les produits.
-     * <p>
-     * Cette méthode permet de récupérer une liste de tous les produits disponibles.
-     * </p>
+     * Récupère tous les produits.
      *
      * @return La liste de tous les produits.
      */
-    @GetMapping(value = APP_ROOT + "/produits/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Renvoie la liste des produits", notes = "Cette methode renvoie la liste des produits qui existent " + "dans la base de donnée", responseContainer = "List<ProduitDto>")
+    @Operation(summary = "Lister tous les produits",
+            description = "Retourne la liste de tous les produits")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Le produit a ete trouver dans la base de donnée "),
+            @ApiResponse(responseCode = "200",
+                    description = "Liste des produits ou liste vide")
     })
+    @GetMapping(value = APP_ROOT + "/produits/all",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     List<ProduitDto> findAll();
 
     /**
-     * Supprime un produit par son identifiant unique.
-     * <p>
-     * Cette méthode permet de supprimer un produit à partir de son identifiant.
-     * </p>
+     * Récupère tous les produits d'une catégorie.
      *
-     * @param id L'identifiant unique du produit à supprimer.
+     * @param idCategory L'identifiant de la catégorie.
+     * @return La liste des produits de la catégorie.
      */
-    @DeleteMapping(value = APP_ROOT + "/produits/delete/{idProduit}")
-    @ApiOperation(value = "Supprimer un produit", notes = "Cette methode permet de supprimer un produit par ID", response = ProduitDto.class)
+    @Operation(summary = "Lister les produits d'une catégorie",
+            description = "Retourne la liste des produits d'une catégorie")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Le produit a ete supprimer "),
+            @ApiResponse(responseCode = "200",
+                    description = "Liste des produits ou liste vide")
     })
+    @GetMapping(value = APP_ROOT + "/produits/all/category/{idCategory}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    List<ProduitDto> findAllByCategory(
+            @PathVariable("idCategory") Integer idCategory);
+
+    /**
+     * Récupère tous les produits d'un fournisseur.
+     *
+     * @param idFournisseur L'identifiant du fournisseur.
+     * @return La liste des produits du fournisseur.
+     */
+    @Operation(summary = "Lister les produits d'un fournisseur",
+            description = "Retourne la liste des produits d'un fournisseur")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Liste des produits ou liste vide")
+    })
+    @GetMapping(value = APP_ROOT + "/produits/all/fournisseur/{idFournisseur}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    List<ProduitDto> findAllByFournisseur(
+            @PathVariable("idFournisseur") Integer idFournisseur);
+
+    /**
+     * Récupère tous les produits d'une entreprise.
+     *
+     * @param idEntreprise L'identifiant de l'entreprise.
+     * @return La liste des produits de l'entreprise.
+     */
+    @Operation(summary = "Lister les produits d'une entreprise",
+            description = "Retourne la liste des produits d'une entreprise")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Liste des produits ou liste vide")
+    })
+    @GetMapping(value = APP_ROOT + "/produits/all/entreprise/{idEntreprise}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    List<ProduitDto> findAllByIdEntreprise(
+            @PathVariable("idEntreprise") Integer idEntreprise);
+
+    /**
+     * Supprime un produit par son identifiant.
+     *
+     * @param id L'identifiant du produit à supprimer.
+     */
+    @Operation(summary = "Supprimer un produit",
+            description = "Permet de supprimer un produit par son identifiant")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Produit supprimé"),
+            @ApiResponse(responseCode = "404",
+                    description = "Produit non trouvé")
+    })
+    @DeleteMapping(value = APP_ROOT + "/produits/delete/{idProduit}")
     void delete(@PathVariable("idProduit") Integer id);
 }

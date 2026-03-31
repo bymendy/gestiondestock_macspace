@@ -6,36 +6,33 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 /**
- * Repository pour l'entité {@link LigneInterventionClient}.
- * <p>
- * Cette interface fournit des méthodes pour interagir avec les entités {@link LigneInterventionClient},
- * permettant des opérations CRUD ainsi que des recherches spécifiques en fonction des critères donnés.
- * </p>
- *
+ * Repository pour gérer les entités {@link LigneInterventionClient}.
+ * Fournit les opérations CRUD et des requêtes
+ * personnalisées sur la table 'ligneinterventionclient'.
  */
 public interface LigneInterventionClientRepository extends JpaRepository<LigneInterventionClient, Integer> {
 
     /**
-     * Trouve toutes les lignes d'intervention client associées à une intervention client spécifique.
-     * <p>
-     * Cette méthode retourne une liste de {@link LigneInterventionClient} pour toutes les lignes associées
-     * à une intervention client identifiée par son ID.
-     * </p>
+     * Trouve toutes les lignes d'une intervention client.
      *
-     * @param id l'identifiant de l'intervention client pour laquelle trouver les lignes d'intervention
-     * @return une liste de {@link LigneInterventionClient} associées à l'intervention client
+     * @param idInterventionClient L'identifiant de l'intervention client.
+     * @return La liste des lignes de l'intervention client.
      */
-    List<LigneInterventionClient> findAllByInterventionClientId(Integer id);
+    List<LigneInterventionClient> findAllByInterventionClientId(Integer idInterventionClient);
 
     /**
-     * Trouve toutes les lignes d'intervention client associées à un produit spécifique.
-     * <p>
-     * Cette méthode retourne une liste de {@link LigneInterventionClient} pour toutes les lignes associées
-     * à un produit identifié par son ID.
-     * </p>
+     * Trouve toutes les lignes d'intervention client d'un produit.
      *
-     * @param id l'identifiant du produit pour lequel trouver les lignes d'intervention
-     * @return une liste de {@link LigneInterventionClient} associées au produit
+     * @param idProduit L'identifiant du produit.
+     * @return La liste des lignes d'intervention du produit.
      */
-    List<LigneInterventionClient> findAllByProduitId(Integer id);
+    List<LigneInterventionClient> findAllByProduitId(Integer idProduit);
+
+    /**
+     * Trouve toutes les lignes d'intervention client d'une entreprise.
+     *
+     * @param idEntreprise L'identifiant de l'entreprise.
+     * @return La liste des lignes de l'entreprise.
+     */
+    List<LigneInterventionClient> findAllByIdEntreprise(Integer idEntreprise);
 }

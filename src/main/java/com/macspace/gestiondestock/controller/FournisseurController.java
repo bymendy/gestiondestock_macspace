@@ -1,16 +1,16 @@
 package com.macspace.gestiondestock.controller;
 
-import java.util.List;
-
 import com.macspace.gestiondestock.controller.api.FournisseurApi;
 import com.macspace.gestiondestock.dto.FournisseurDto;
 import com.macspace.gestiondestock.services.FournisseurService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
- * Contrôleur REST pour gérer les opérations liées aux fournisseurs.
- * Implémente les méthodes définies dans l'interface FournisseurApi.
+ * Contrôleur REST pour la gestion des fournisseurs dans MacSpace.
+ * Implémente les endpoints définis dans {@link FournisseurApi}.
  */
 @RestController
 public class FournisseurController implements FournisseurApi {
@@ -18,9 +18,9 @@ public class FournisseurController implements FournisseurApi {
     private final FournisseurService fournisseurService;
 
     /**
-     * Constructeur avec injection du service FournisseurService.
+     * Constructeur avec injection de dépendances.
      *
-     * @param fournisseurService Le service utilisé pour gérer les fournisseurs.
+     * @param fournisseurService Le service de gestion des fournisseurs.
      */
     @Autowired
     public FournisseurController(FournisseurService fournisseurService) {
@@ -28,10 +28,7 @@ public class FournisseurController implements FournisseurApi {
     }
 
     /**
-     * Enregistre un nouveau fournisseur ou met à jour un fournisseur existant.
-     *
-     * @param dto Le DTO du fournisseur à enregistrer ou à mettre à jour.
-     * @return Le DTO du fournisseur enregistré ou mis à jour.
+     * {@inheritDoc}
      */
     @Override
     public FournisseurDto save(FournisseurDto dto) {
@@ -39,10 +36,7 @@ public class FournisseurController implements FournisseurApi {
     }
 
     /**
-     * Recherche un fournisseur par son ID.
-     *
-     * @param id L'ID du fournisseur à rechercher.
-     * @return Le DTO du fournisseur trouvé.
+     * {@inheritDoc}
      */
     @Override
     public FournisseurDto findById(Integer id) {
@@ -50,9 +44,23 @@ public class FournisseurController implements FournisseurApi {
     }
 
     /**
-     * Renvoie une liste de tous les fournisseurs.
-     *
-     * @return Une liste de DTO des fournisseurs.
+     * {@inheritDoc}
+     */
+    @Override
+    public FournisseurDto findByEmail(String email) {
+        return fournisseurService.findByEmail(email);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<FournisseurDto> findAllByNom(String nom) {
+        return fournisseurService.findAllByNom(nom);
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public List<FournisseurDto> findAll() {
@@ -60,9 +68,15 @@ public class FournisseurController implements FournisseurApi {
     }
 
     /**
-     * Supprime un fournisseur par son ID.
-     *
-     * @param id L'ID du fournisseur à supprimer.
+     * {@inheritDoc}
+     */
+    @Override
+    public List<FournisseurDto> findAllByIdEntreprise(Integer idEntreprise) {
+        return fournisseurService.findAllByIdEntreprise(idEntreprise);
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public void delete(Integer id) {

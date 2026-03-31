@@ -1,11 +1,15 @@
 package com.macspace.gestiondestock.services.impl;
 
+import com.macspace.gestiondestock.dto.AdresseDto;
 import com.macspace.gestiondestock.dto.ClientDto;
 import com.macspace.gestiondestock.exception.EntityNotFoundException;
-import com.macspace.gestiondestock.exception.InvalidEntityException;
 import com.macspace.gestiondestock.exception.ErrorCodes;
+import com.macspace.gestiondestock.exception.InvalidEntityException;
 import com.macspace.gestiondestock.exception.InvalidOperationException;
+import com.macspace.gestiondestock.model.Adresse;
+import com.macspace.gestiondestock.model.Client;
 import com.macspace.gestiondestock.model.InterventionClient;
+import com.macspace.gestiondestock.repository.AdresseRepository;
 import com.macspace.gestiondestock.repository.ClientRepository;
 import com.macspace.gestiondestock.repository.InterventionClientRepository;
 import com.macspace.gestiondestock.services.ClientService;
@@ -15,100 +19,161 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * Service d'implémentation pour la gestion des clients.
+ * Implémentation du service pour la gestion des clients dans MacSpace.
+ *
+ * Gère la création, la recherche et la suppression des clients.
+ * L'adresse est persistée avant le client pour respecter
+ * les contraintes de clé étrangère JPA.
  */
 @Service
 @Slf4j
 public class ClientServiceImpl implements ClientService {
-    private ClientRepository clientRepository;
-    private InterventionClientRepository interventionClientRepository;
+
+    private final ClientRepository clientRepository;
+    private final InterventionClientRepository interventionClientRepository;
+    private final AdresseRepository adresseRepository;
 
     /**
-     * Constructeur avec injection de dépendances pour les repositories de clients et d'interventions clients.
+     * Constructeur avec injection de dépendances.
      *
-     * @param clientRepository le repository pour les clients
-     * @param interventionClientRepository le repository pour les interventions clients
+     * @param clientRepository             Repository JPA des clients.
+     * @param interventionClientRepository Repository JPA des interventions clients.
+     * @param adresseRepository            Repository JPA des adresses.
      */
     @Autowired
-    public ClientServiceImpl(ClientRepository clientRepository, InterventionClientRepository interventionClientRepository) {
+    public ClientServiceImpl(
+            ClientRepository clientRepository,
+            InterventionClientRepository interventionClientRepository,
+            AdresseRepository adresseRepository) {
         this.clientRepository = clientRepository;
         this.interventionClientRepository = interventionClientRepository;
+        this.adresseRepository = adresseRepository;
     }
 
     /**
-     * Enregistre ou met à jour un client.
-     *
-     * @param dto le DTO du client à enregistrer ou mettre à jour
-     * @return le DTO du client enregistré ou mis à jour
-     * @throws InvalidEntityException si le client n'est pas valide
+     * {@inheritDoc}
+     * Sauvegarde l'adresse avant le client si elle existe.
      */
     @Override
     public ClientDto save(ClientDto dto) {
         List<String> errors = ClientValidator.validate(dto);
         if (!errors.isEmpty()) {
-            log.error("Client is not valid {}", dto);
-            throw new InvalidEntityException("Le client n'est pas valide", ErrorCodes.CLIENT_NOT_VALID, errors);
+            log.error("Le client n'est pas valide {}", dto);
+            throw new InvalidEntityException(
+                    "Le client n'est pas valide",
+                    ErrorCodes.CLIENT_NOT_VALID,
+                    errors
+            );
         }
 
-        return ClientDto.fromEntity(
-                clientRepository.save(
-                        ClientDto.toEntity(dto)
-                )
-        );
+        // 1. Sauvegarder l'adresse en premier si elle existe
+        Adresse adresseSauvegardee = null;
+        if (dto.getAdresse() != null) {
+            adresseSauvegardee = adresseRepository.save(
+                    AdresseDto.toEntity(dto.getAdresse())
+            );
+            dto.setAdresse(AdresseDto.fromEntity(adresseSauvegardee));
+        }
+
+        // 2. Construire le client — UPDATE si id présent, INSERT sinon
+        Client client;
+        if (dto.getId() != null) {
+            /* Mode modification — récupérer le client existant */
+            client = clientRepository.findById(dto.getId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Aucun client avec l'ID = " + dto.getId(),
+                            ErrorCodes.CLIENT_NOT_FOUND
+                    ));
+        } else {
+            /* Mode création */
+            client = new Client();
+        }
+
+        client.setNom(dto.getNom());
+        client.setPrenom(dto.getPrenom());
+        client.setEmail(dto.getEmail());
+        client.setNumTel(dto.getNumTel());
+        client.setPhoto(dto.getPhoto());
+        client.setAdresse(adresseSauvegardee);
+        client.setIdEntreprise(dto.getIdEntreprise());
+
+        // 3. Sauvegarder le client
+        return ClientDto.fromEntity(clientRepository.save(client));
     }
 
     /**
-     * Recherche un client par son identifiant.
-     *
-     * @param id l'identifiant du client
-     * @return le DTO du client trouvé
-     * @throws EntityNotFoundException si aucun client n'est trouvé avec l'identifiant donné
+     * {@inheritDoc}
      */
     @Override
     public ClientDto findById(Integer id) {
         if (id == null) {
-            log.error("Client ID is null");
+            log.error("L'ID du client est nul");
             return null;
         }
         return clientRepository.findById(id)
                 .map(ClientDto::fromEntity)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Aucun Client avec l'ID = " + id + " n'a ete trouve dans la Base de donnée",
-                        ErrorCodes.CLIENT_NOT_FOUND)
-                );
+                        "Aucun client avec l'ID = " + id + " n'a été trouvé",
+                        ErrorCodes.CLIENT_NOT_FOUND
+                ));
     }
 
     /**
-     * Retourne la liste de tous les clients.
-     *
-     * @return la liste des DTOs des clients
+     * {@inheritDoc}
+     */
+    @Override
+    public ClientDto findByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            log.error("L'email du client est nul");
+            return null;
+        }
+        return clientRepository.findClientByEmail(email)
+                .map(ClientDto::fromEntity)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucun client avec l'email = " + email + " n'a été trouvé",
+                        ErrorCodes.CLIENT_NOT_FOUND
+                ));
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public List<ClientDto> findAll() {
         return clientRepository.findAll().stream()
                 .map(ClientDto::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
-     * Supprime un client par son identifiant.
-     *
-     * @param id l'identifiant du client à supprimer
-     * @throws InvalidOperationException si le client a des interventions clients associées
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ClientDto> findAllByIdEntreprise(Integer idEntreprise) {
+        return clientRepository.findAllByIdEntreprise(idEntreprise)
+                .stream()
+                .map(ClientDto::fromEntity)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public void delete(Integer id) {
         if (id == null) {
-            log.error("Client ID is null");
+            log.error("L'ID du client est nul");
             return;
         }
-        List<InterventionClient> commandeClients = interventionClientRepository.findAllByClientId(id);
-        if (!commandeClients.isEmpty()) {
-            throw new InvalidOperationException("Impossible de supprimer un client qui a deja des interventions clients",
-                    ErrorCodes.CLIENT_ALREADY_IN_USE);
+        List<InterventionClient> interventionClients =
+                interventionClientRepository.findAllByClientId(id);
+        if (!interventionClients.isEmpty()) {
+            throw new InvalidOperationException(
+                    "Impossible de supprimer un client qui a déjà des interventions",
+                    ErrorCodes.CLIENT_ALREADY_IN_USE
+            );
         }
         clientRepository.deleteById(id);
     }

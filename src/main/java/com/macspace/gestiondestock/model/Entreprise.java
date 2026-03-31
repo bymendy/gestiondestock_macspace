@@ -1,87 +1,85 @@
 package com.macspace.gestiondestock.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
 /**
- * Classe représentant une entreprise dans le système de gestion de stock.
- * <p>
- * Cette classe inclut les propriétés suivantes :
- * <ul>
- *   <li>nom : Le nom de l'entreprise.</li>
- *   <li>description : Une description de l'entreprise.</li>
- *   <li>codeFiscal : Le code fiscal de l'entreprise.</li>
- *   <li>photo : Une photo de l'entreprise.</li>
- *   <li>email : L'adresse email de l'entreprise.</li>
- *   <li>numTel : Le numéro de téléphone de l'entreprise.</li>
- *   <li>siteWeb : Le site web de l'entreprise.</li>
- *   <li>utilisateurs : Une liste d'utilisateurs associés à l'entreprise.</li>
- * </ul>
- * </p>
- * <p>
- * La classe est annotée avec {@link Entity} et {@link Table} pour indiquer qu'il s'agit
- * d'une entité JPA mappée à la table 'entreprise' de la base de données. Les annotations Lombok
- * {@link Data}, {@link Builder}, {@link NoArgsConstructor}, et {@link AllArgsConstructor}
- * sont utilisées pour générer automatiquement les méthodes getter, setter, toString, equals et hashCode.
- * </p>
+ * Entité représentant l'entreprise Mac Sécurité dans MacSpace.
+ *
+ * L'entreprise est l'entité racine du système.
+ * Elle est liée à une adresse et possède plusieurs utilisateurs.
+ * Mappée à la table 'entreprise' en base de données.
+ *
+ * Note : Cette entité n'utilise pas idEntreprise
+ * car elle EST l'entreprise racine.
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "entreprise")
 public class Entreprise extends AbstractEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
     /**
-     * Le nom de l'entreprise.
+     * Nom de l'entreprise.
      */
+    @Column(name = "nom", nullable = false)
     private String nom;
 
     /**
-     * Une description de l'entreprise.
+     * Description de l'entreprise.
      */
+    @Column(name = "description")
     private String description;
 
-    @OneToOne
+    /**
+     * Adresse postale de l'entreprise.
+     */
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "id_adresse", referencedColumnName = "id")
     private Adresse adresse;
 
-
     /**
-     * Le code fiscal de l'entreprise.
+     * Code fiscal de l'entreprise.
      */
+    @Column(name = "code_fiscal", nullable = false, unique = true)
     private String codeFiscal;
 
     /**
-     * Une photo de l'entreprise.
+     * Photo de l'entreprise (URL Flickr).
      */
+    @Column(name = "photo")
     private String photo;
 
     /**
-     * L'adresse email de l'entreprise.
+     * Adresse e-mail de l'entreprise.
      */
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     /**
-     * Le numéro de téléphone de l'entreprise.
+     * Numéro de téléphone de l'entreprise.
      */
+    @Column(name = "num_tel", nullable = false)
     private String numTel;
 
     /**
-     * Le site web de l'entreprise.
+     * Site web de l'entreprise.
      */
+    @Column(name = "site_web")
     private String siteWeb;
 
     /**
-     * La liste des utilisateurs associés à l'entreprise.
-     * Relation OneToMany avec l'entité {@link Utilisateur}.
+     * Liste des utilisateurs associés à cette entreprise.
      */
-    @OneToMany
+    @OneToMany(mappedBy = "entreprise", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Utilisateur> utilisateurs;
 }

@@ -8,107 +8,131 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * L'interface InterventionClientService définit les opérations de gestion des interventions clients dans le système.
- * <p>
- * Elle permet d'enregistrer, mettre à jour, rechercher, lister et supprimer des interventions clients, ainsi que de gérer
- * les lignes d'intervention associées.
- * </p>
+ * Interface de service pour la gestion des interventions clients dans MacSpace.
+ * Définit les opérations métier disponibles sur les interventions clients.
  */
 public interface InterventionClientService {
 
     /**
      * Enregistre ou met à jour une intervention client.
      *
-     * @param dto l'objet {@link InterventionClientDto} représentant l'intervention à enregistrer ou mettre à jour
-     * @return l'objet {@link InterventionClientDto} enregistré ou mis à jour
+     * @param dto Le DTO de l'intervention à enregistrer.
+     * @return Le DTO de l'intervention enregistrée.
      */
     InterventionClientDto save(InterventionClientDto dto);
 
     /**
-     * Met à jour l'état d'une intervention.
+     * Met à jour l'état d'une intervention client.
      *
-     * @param idIntervention l'identifiant de l'intervention à mettre à jour
-     * @param etatIntervention le nouvel état de l'intervention
-     * @return l'objet {@link InterventionClientDto} mis à jour
+     * @param idIntervention L'identifiant de l'intervention.
+     * @param etatIntervention Le nouvel état de l'intervention.
+     * @return Le DTO de l'intervention mise à jour.
      */
-    InterventionClientDto updateEtatIntervention(Integer idIntervention, EtatIntervention etatIntervention);
+    InterventionClientDto updateEtatIntervention(Integer idIntervention,
+                                                 EtatIntervention etatIntervention);
 
     /**
      * Met à jour la quantité d'une ligne d'intervention.
      *
-     * @param idIntervention l'identifiant de l'intervention contenant la ligne
-     * @param idLigneIntervention l'identifiant de la ligne d'intervention à mettre à jour
-     * @param quantite la nouvelle quantité
-     * @return l'objet {@link InterventionClientDto} mis à jour
+     * @param idIntervention L'identifiant de l'intervention.
+     * @param idLigneIntervention L'identifiant de la ligne d'intervention.
+     * @param quantite La nouvelle quantité.
+     * @return Le DTO de l'intervention mise à jour.
      */
-    InterventionClientDto updateQuantiteIntervention(Integer idIntervention, Integer idLigneIntervention, BigDecimal quantite);
+    InterventionClientDto updateQuantiteIntervention(Integer idIntervention,
+                                                     Integer idLigneIntervention, BigDecimal quantite);
 
     /**
-     * Met à jour le client associé à une intervention.
+     * Met à jour le client d'une intervention.
      *
-     * @param idIntervention l'identifiant de l'intervention à mettre à jour
-     * @param idClient l'identifiant du nouveau client
-     * @return l'objet {@link InterventionClientDto} mis à jour
+     * @param idIntervention L'identifiant de l'intervention.
+     * @param idClient L'identifiant du nouveau client.
+     * @return Le DTO de l'intervention mise à jour.
      */
     InterventionClientDto updateClient(Integer idIntervention, Integer idClient);
 
     /**
-     * Met à jour le produit dans une intervention.
+     * Met à jour le produit d'une ligne d'intervention.
      *
-     * @param idIntervention l'identifiant de l'intervention contenant la ligne
-     * @param idLigneIntervention l'identifiant de la ligne d'intervention à mettre à jour
-     * @param newIdProduit l'identifiant du nouveau produit
-     * @return l'objet {@link InterventionClientDto} mis à jour
+     * @param idIntervention L'identifiant de l'intervention.
+     * @param idLigneIntervention L'identifiant de la ligne d'intervention.
+     * @param newIdProduit L'identifiant du nouveau produit.
+     * @return Le DTO de l'intervention mise à jour.
      */
-    InterventionClientDto updateProduit(Integer idIntervention, Integer idLigneIntervention, Integer newIdProduit);
+    InterventionClientDto updateProduit(Integer idIntervention,
+                                        Integer idLigneIntervention, Integer newIdProduit);
 
     /**
-     * Supprime un produit d'une intervention en supprimant la ligne d'intervention correspondante.
+     * Supprime un produit d'une ligne d'intervention.
      *
-     * @param idIntervention l'identifiant de l'intervention contenant la ligne
-     * @param idLigneIntervention l'identifiant de la ligne d'intervention à supprimer
-     * @return l'objet {@link InterventionClientDto} mis à jour après la suppression
+     * @param idIntervention L'identifiant de l'intervention.
+     * @param idLigneIntervention L'identifiant de la ligne d'intervention.
+     * @return Le DTO de l'intervention mise à jour.
      */
-    InterventionClientDto deleteProduit(Integer idIntervention, Integer idLigneIntervention);
+    InterventionClientDto deleteProduit(Integer idIntervention,
+                                        Integer idLigneIntervention);
 
     /**
-     * Recherche une intervention par son identifiant.
+     * Recherche une intervention client par son identifiant.
      *
-     * @param id l'identifiant de l'intervention
-     * @return l'objet {@link InterventionClientDto} correspondant à l'identifiant fourni
-     * @throws EntityNotFoundException si aucune intervention n'est trouvée avec l'identifiant fourni
+     * @param id L'identifiant de l'intervention.
+     * @return Le DTO de l'intervention trouvée.
      */
     InterventionClientDto findById(Integer id);
 
     /**
-     * Recherche une intervention par son code.
+     * Recherche une intervention client par son code.
      *
-     * @param code le code de l'intervention
-     * @return l'objet {@link InterventionClientDto} correspondant au code fourni
-     * @throws EntityNotFoundException si aucune intervention n'est trouvée avec le code fourni
+     * @param code Le code de l'intervention.
+     * @return Le DTO de l'intervention trouvée.
      */
     InterventionClientDto findByCode(String code);
 
     /**
      * Récupère toutes les interventions clients.
      *
-     * @return une liste d'objets {@link InterventionClientDto} représentant toutes les interventions
+     * @return La liste de toutes les interventions.
      */
     List<InterventionClientDto> findAll();
 
     /**
-     * Récupère toutes les lignes d'intervention pour une intervention spécifique.
+     * Récupère toutes les interventions d'un client.
      *
-     * @param idIntervention l'identifiant de l'intervention
-     * @return une liste d'objets {@link LigneInterventionClientDto} représentant les lignes d'intervention associées
+     * @param idClient L'identifiant du client.
+     * @return La liste des interventions du client.
      */
-    List<LigneInterventionClientDto> findAllLignesInterventionsClientByInterventionClientId(Integer idIntervention);
+    List<InterventionClientDto> findAllByClient(Integer idClient);
 
     /**
-     * Supprime une intervention par son identifiant.
+     * Récupère toutes les interventions par état.
      *
-     * @param id l'identifiant de l'intervention à supprimer
-     * @throws EntityNotFoundException si aucune intervention n'est trouvée avec l'identifiant fourni
+     * @param etatIntervention L'état de l'intervention.
+     * @return La liste des interventions correspondantes.
+     */
+    List<InterventionClientDto> findAllByEtatIntervention(
+            EtatIntervention etatIntervention);
+
+    /**
+     * Récupère toutes les interventions d'une entreprise.
+     *
+     * @param idEntreprise L'identifiant de l'entreprise.
+     * @return La liste des interventions de l'entreprise.
+     */
+    List<InterventionClientDto> findAllByIdEntreprise(Integer idEntreprise);
+
+    /**
+     * Récupère toutes les lignes d'une intervention client.
+     *
+     * @param idIntervention L'identifiant de l'intervention.
+     * @return La liste des lignes de l'intervention.
+     */
+    List<LigneInterventionClientDto> findAllLignesInterventionsClientByInterventionClientId(
+            Integer idIntervention);
+
+    /**
+     * Supprime une intervention client par son identifiant.
+     *
+     * @param id L'identifiant de l'intervention à supprimer.
      */
     void delete(Integer id);
 }

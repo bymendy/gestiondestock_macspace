@@ -1,99 +1,119 @@
 package com.macspace.gestiondestock.dto;
 
-import com.macspace.gestiondestock.model.Category;
-import com.macspace.gestiondestock.model.Produits;
+import com.macspace.gestiondestock.model.Produit;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 /**
- * Data Transfer Object (DTO) pour les produits.
- * <p>
- * Cette classe est utilisée pour transférer les informations relatives aux produits dans l'application.
- * Elle contient des données telles que le code du produit, sa désignation, les prix, et la catégorie associée.
- * </p>
+ * DTO pour l'entité {@link Produit} dans MacSpace.
+ * Assure le transfert des données produit entre
+ * l'API et les clients externes.
  */
-@Builder
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProduitDto {
+
+    /**
+     * Identifiant unique du produit.
+     */
     private Integer id;
 
     /**
-     * Le code unique du produit.
+     * Code unique du produit.
      */
     private String codeProduit;
 
     /**
-     * La désignation ou le nom du produit.
+     * Désignation ou nom du produit.
      */
     private String designation;
 
     /**
-     * Le prix unitaire hors taxes du produit.
+     * Prix unitaire hors taxes.
      */
     private BigDecimal prixUnitaireHt;
 
     /**
-     * Le taux de TVA appliqué au produit.
+     * Taux de TVA appliqué.
      */
     private BigDecimal tauxTva;
 
     /**
-     * Le prix unitaire toutes taxes comprises du produit.
+     * Prix unitaire toutes taxes comprises.
      */
     private BigDecimal prixUnitaireTtc;
 
     /**
-     * Une photo du produit.
+     * Photo du produit (URL Flickr).
      */
     private String photo;
 
     /**
-     * La catégorie à laquelle appartient le produit.
-     * Relation ManyToOne avec l'entité {@link Category}.
+     * Catégorie du produit.
      */
     private CategoryDto category;
 
     /**
-     * Convertit une entité {@link Produits} en DTO {@link ProduitDto}.
-     *
-     * @param produit L'entité {@link Produits} à convertir.
-     * @return Le DTO {@link ProduitDto} correspondant, ou {@code null} si l'entité est {@code null}.
+     * Fournisseur du produit.
      */
-    public static ProduitDto fromEntity(Produits produit) {
+    private FournisseurDto fournisseur;
+
+    /**
+     * Identifiant de l'entreprise — multi-tenant.
+     */
+    private Integer idEntreprise;
+
+    /**
+     * Convertit une entité {@link Produit} en DTO.
+     *
+     * @param produit L'entité à convertir.
+     * @return Le DTO correspondant, ou null si l'entité est null.
+     */
+    public static ProduitDto fromEntity(Produit produit) {
         if (produit == null) {
             return null;
         }
-
         return ProduitDto.builder()
                 .id(produit.getId())
                 .codeProduit(produit.getCodeProduit())
                 .designation(produit.getDesignation())
                 .prixUnitaireHt(produit.getPrixUnitaireHt())
+                .tauxTva(produit.getTauxTva())
                 .prixUnitaireTtc(produit.getPrixUnitaireTtc())
-                // Ajoutez d'autres champs si nécessaire
+                .photo(produit.getPhoto())
+                .category(CategoryDto.fromEntity(produit.getCategory()))
+                .fournisseur(FournisseurDto.fromEntity(produit.getFournisseur()))
+                .idEntreprise(produit.getIdEntreprise())
                 .build();
     }
 
     /**
-     * Convertit un DTO {@link ProduitDto} en entité {@link Produits}.
+     * Convertit un DTO en entité {@link Produit}.
      *
-     * @param produitDto Le DTO {@link ProduitDto} à convertir.
-     * @return L'entité {@link Produits} correspondant, ou {@code null} si le DTO est {@code null}.
+     * @param produitDto Le DTO à convertir.
+     * @return L'entité correspondante, ou null si le DTO est null.
      */
-    public static Produits toEntity(ProduitDto produitDto) {
+    public static Produit toEntity(ProduitDto produitDto) {
         if (produitDto == null) {
             return null;
         }
-
-        Produits produit = new Produits();
-        produit.setId(produitDto.getId());
-        produit.setCodeProduit(produitDto.getCodeProduit());
-        produit.setDesignation(produitDto.getDesignation());
-        produit.setPrixUnitaireTtc(produitDto.getPrixUnitaireTtc());
-        // Ajoutez d'autres champs si nécessaire
-
+        Produit produit = Produit.builder()
+                .codeProduit(produitDto.getCodeProduit())
+                .designation(produitDto.getDesignation())
+                .prixUnitaireHt(produitDto.getPrixUnitaireHt())
+                .tauxTva(produitDto.getTauxTva())
+                .prixUnitaireTtc(produitDto.getPrixUnitaireTtc())
+                .photo(produitDto.getPhoto())
+                .category(CategoryDto.toEntity(produitDto.getCategory()))
+                .fournisseur(FournisseurDto.toEntity(produitDto.getFournisseur()))
+                .build();
+        produit.setIdEntreprise(produitDto.getIdEntreprise());
         return produit;
     }
 }

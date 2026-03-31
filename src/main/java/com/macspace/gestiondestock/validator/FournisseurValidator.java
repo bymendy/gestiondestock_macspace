@@ -7,48 +7,49 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Validateur pour les objets {@link FournisseurDto}.
- * <p>
- * Cette classe fournit des méthodes pour valider les données d'un fournisseur afin de
- * garantir que toutes les informations requises sont présentes et correctement formatées.
- * </p>
+ * Validator pour l'entité {@link FournisseurDto} dans MacSpace.
+ * Vérifie que les données fournisseur sont complètes et valides
+ * avant tout traitement ou persistance.
  */
 public class FournisseurValidator {
 
     /**
-     * Valide un objet {@link FournisseurDto}.
+     * Valide un {@link FournisseurDto}.
      * <p>
-     * Cette méthode vérifie si les champs essentiels du fournisseur sont correctement
-     * remplis. Les erreurs de validation sont retournées sous forme de liste de chaînes de caractères.
-     * </p>
+     * Champs validés :
+     * <ul>
+     *     <li>Nom</li>
+     *     <li>Email</li>
+     *     <li>Numéro de téléphone</li>
+     *     <li>Adresse</li>
+     * </ul>
      *
-     * @param dto l'objet {@link FournisseurDto} à valider
-     * @return une liste de chaînes de caractères contenant les messages d'erreur de validation
+     * @param dto Le DTO à valider.
+     * @return La liste des erreurs de validation,
+     *         vide si toutes les données sont valides.
      */
-    public static List<String> validate(FournisseurDto dto ) {
+    public static List<String> validate(FournisseurDto dto) {
         List<String> errors = new ArrayList<>();
 
-        // Si l'objet DTO est nul, ajoute des messages d'erreur pour chaque champ obligatoire
-        if (dto == null){
+        if (dto == null) {
             errors.add("Veuillez renseigner le nom du Fournisseur");
-            errors.add("Veuillez renseigner le prénom du Fournisseur");
             errors.add("Veuillez renseigner l'email du Fournisseur");
             errors.add("Veuillez renseigner le numéro de téléphone du Fournisseur");
             return errors;
         }
-
-        // Validation des champs de l'objet DTO
-        if (!StringUtils.hasLength(dto.getNom())){
+        if (!StringUtils.hasLength(dto.getNom())) {
             errors.add("Veuillez renseigner le nom du Fournisseur");
         }
-        if (!StringUtils.hasLength(dto.getPrenom())){
-            errors.add("Veuillez renseigner le prénom du Fournisseur");
-        }
-        if (!StringUtils.hasLength(dto.getMail())){
+        if (!StringUtils.hasLength(dto.getEmail())) {
             errors.add("Veuillez renseigner l'email du Fournisseur");
+        } else if (!dto.getEmail().contains("@")) {
+            errors.add("Veuillez renseigner un email valide pour le Fournisseur");
         }
-        if (!StringUtils.hasLength(dto.getNumTel())){
+        if (!StringUtils.hasLength(dto.getNumTel())) {
             errors.add("Veuillez renseigner le numéro de téléphone du Fournisseur");
+        }
+        if (dto.getAdresse() != null) {
+            errors.addAll(AdresseValidator.validate(dto.getAdresse()));
         }
 
         return errors;

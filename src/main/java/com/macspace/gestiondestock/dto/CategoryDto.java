@@ -2,89 +2,91 @@ package com.macspace.gestiondestock.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.macspace.gestiondestock.model.Category;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 /**
- * Classe de transfert de données (DTO) pour l'entité Category.
+ * DTO pour l'entité {@link Category} dans MacSpace.
+ * Assure le transfert des données de catégorie entre
+ * l'API et les clients externes.
  * <p>
- * Cette classe sert à transférer les données de l'entité Category entre les différentes couches de l'application.
+ * La liste des produits n'est pas mappée dans {@code fromEntity()}
+ * pour éviter le LazyInitializationException hors session Hibernate.
  * </p>
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CategoryDto {
 
     /**
-     * L'identifiant unique de la catégorie.
+     * Identifiant unique de la catégorie.
      */
     private Integer id;
 
     /**
-     * Le code unique de la catégorie.
+     * Code unique de la catégorie.
      */
     private String code;
 
     /**
-     * La désignation de la catégorie.
+     * Désignation de la catégorie.
      */
     private String designation;
 
+    /**
+     * Identifiant de l'entreprise — multi-tenant.
+     */
     private Integer idEntreprise;
 
-
     /**
-     * La liste des produits appartenant à cette catégorie.
-     * Ignorée lors de la sérialisation JSON pour éviter les références circulaires.
+     * Liste des produits de la catégorie.
+     * Ignorée en JSON pour éviter les références circulaires.
      */
     @JsonIgnore
     private List<ProduitDto> produits;
 
     /**
-     * Convertit une entité Category en DTO CategoryDto.
+     * Convertit une entité {@link Category} en DTO.
+     * La liste des produits n'est pas mappée pour éviter
+     * le LazyInitializationException hors session Hibernate.
      *
-     * @param category L'entité Category à convertir.
-     * @return Le DTO CategoryDto correspondant à l'entité Category.
+     * @param category L'entité à convertir.
+     * @return Le DTO correspondant, ou null si l'entité est null.
      */
     public static CategoryDto fromEntity(Category category) {
         if (category == null) {
             return null;
         }
-
         return CategoryDto.builder()
                 .id(category.getId())
                 .code(category.getCode())
                 .designation(category.getDesignation())
                 .idEntreprise(category.getIdEntreprise())
-
-                .produits(category.getProduits() != null ? category.getProduits().stream()
-                        .map(ProduitDto::fromEntity)
-                        .toList() : null)
+                // produits non mappés — évite LazyInitializationException
                 .build();
     }
 
     /**
-     * Convertit un DTO CategoryDto en entité Category.
+     * Convertit un DTO en entité {@link Category}.
      *
-     * @param categoryDto Le DTO CategoryDto à convertir.
-     * @return L'entité Category correspondant au DTO CategoryDto.
+     * @param categoryDto Le DTO à convertir.
+     * @return L'entité correspondante, ou null si le DTO est null.
      */
     public static Category toEntity(CategoryDto categoryDto) {
         if (categoryDto == null) {
             return null;
         }
-
-        Category category = new Category();
-        category.setId(categoryDto.getId());
-        category.setCode(categoryDto.getCode());
-        category.setDesignation(categoryDto.getDesignation());
+        Category category = Category.builder()
+                .code(categoryDto.getCode())
+                .designation(categoryDto.getDesignation())
+                .build();
         category.setIdEntreprise(categoryDto.getIdEntreprise());
-        category.setProduits(categoryDto.getProduits() != null ? categoryDto.getProduits().stream()
-                .map(ProduitDto::toEntity)
-                .toList() : null);
-
         return category;
     }
 }

@@ -1,64 +1,76 @@
 package com.macspace.gestiondestock.services;
 
 import com.macspace.gestiondestock.dto.ChangerMotDePasseUtilisateurDto;
-import com.macspace.gestiondestock.dto.FournisseurDto;
 import com.macspace.gestiondestock.dto.UtilisateurDto;
 
 import java.util.List;
 
 /**
- * Interface qui définit les services de gestion des utilisateurs dans l'application.
- * <p>
- * Cette interface fournit des méthodes pour gérer les utilisateurs, y compris la création,
- * la lecture, la mise à jour, la suppression, et la recherche d'utilisateurs par email.
- * Elle inclut également une méthode pour changer le mot de passe d'un utilisateur.
- * </p>
+ * Interface de service pour la gestion des utilisateurs dans MacSpace.
+ * Définit les opérations métier disponibles sur les utilisateurs.
  */
 public interface UtilisateurService {
 
     /**
-     * Enregistre un nouvel utilisateur ou met à jour un utilisateur existant.
+     * Enregistre ou met à jour un utilisateur.
      *
-     * @param dto l'objet {@link UtilisateurDto} contenant les informations de l'utilisateur à enregistrer ou mettre à jour
-     * @return l'objet {@link UtilisateurDto} après son enregistrement ou sa mise à jour
+     * @param dto Le DTO de l'utilisateur à enregistrer.
+     * @return Le DTO de l'utilisateur enregistré.
      */
     UtilisateurDto save(UtilisateurDto dto);
 
     /**
-     * Recherche un utilisateur par son identifiant unique.
+     * Recherche un utilisateur par son identifiant.
      *
-     * @param id l'identifiant de l'utilisateur à rechercher
-     * @return l'objet {@link UtilisateurDto} correspondant à l'utilisateur trouvé, ou null si aucun utilisateur n'est trouvé
+     * @param id L'identifiant de l'utilisateur.
+     * @return Le DTO de l'utilisateur trouvé.
      */
     UtilisateurDto findById(Integer id);
 
     /**
-     * Récupère la liste de tous les utilisateurs.
-     *
-     * @return une liste d'objets {@link UtilisateurDto} représentant tous les utilisateurs du système
-     */
-    List<UtilisateurDto> findAll();
-
-    /**
-     * Supprime un utilisateur par son identifiant unique.
-     *
-     * @param id l'identifiant de l'utilisateur à supprimer
-     */
-    void delete(Integer id);
-
-    /**
      * Recherche un utilisateur par son email.
+     * Utilisé pour l'authentification JWT.
      *
-     * @param email l'email de l'utilisateur à rechercher
-     * @return l'objet {@link UtilisateurDto} correspondant à l'utilisateur trouvé, ou null si aucun utilisateur n'est trouvé
+     * @param email L'email de l'utilisateur.
+     * @return Le DTO de l'utilisateur trouvé.
      */
     UtilisateurDto findByEmail(String email);
 
     /**
+     * Récupère tous les utilisateurs.
+     *
+     * @return La liste de tous les utilisateurs.
+     */
+    List<UtilisateurDto> findAll();
+
+    /**
+     * Récupère tous les utilisateurs d'une entreprise.
+     *
+     * @param idEntreprise L'identifiant de l'entreprise.
+     * @return La liste des utilisateurs de l'entreprise.
+     */
+    List<UtilisateurDto> findAllByEntreprise(Integer idEntreprise);
+
+    /**
+     * Récupère tous les utilisateurs par fonction.
+     *
+     * @param fonction La fonction de l'utilisateur.
+     * @return La liste des utilisateurs correspondants.
+     */
+    List<UtilisateurDto> findAllByFonction(String fonction);
+
+    /**
      * Change le mot de passe d'un utilisateur.
      *
-     * @param dto l'objet {@link ChangerMotDePasseUtilisateurDto} contenant les informations nécessaires pour changer le mot de passe
-     * @return l'objet {@link UtilisateurDto} après la mise à jour du mot de passe
+     * @param dto Le DTO contenant les informations de changement de mot de passe.
+     * @return Le DTO de l'utilisateur après mise à jour.
      */
     UtilisateurDto changerMotDePasse(ChangerMotDePasseUtilisateurDto dto);
+
+    /**
+     * Supprime un utilisateur par son identifiant.
+     *
+     * @param id L'identifiant de l'utilisateur à supprimer.
+     */
+    void delete(Integer id);
 }

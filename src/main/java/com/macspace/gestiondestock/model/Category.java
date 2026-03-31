@@ -1,57 +1,44 @@
 package com.macspace.gestiondestock.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
 /**
- * Classe représentant une catégorie de produits dans le système de gestion de stock.
- * <p>
- * Cette classe inclut les propriétés suivantes :
- * <ul>
- *   <li>code : Le code unique de la catégorie.</li>
- *   <li>designation : La désignation de la catégorie.</li>
- *   <li>produits : La liste des produits appartenant à cette catégorie.</li>
- * </ul>
- * </p>
- * <p>
- * La classe est annotée avec {@link Entity} et {@link Table} pour indiquer qu'il s'agit
- * d'une entité JPA mappée à la table 'category' de la base de données. Les annotations Lombok
- * {@link Data}, {@link NoArgsConstructor}, {@link AllArgsConstructor}, et {@link EqualsAndHashCode}
- * sont utilisées pour générer automatiquement les méthodes getter, setter, toString, equals et hashCode.
- * </p>
+ * Entité représentant une catégorie de produits de sécurité dans MacSpace.
+ *
+ * Une catégorie regroupe plusieurs produits.
+ * Mappée à la table 'category' en base de données.
  */
-@Data
-@Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "category")
 public class Category extends AbstractEntity {
 
     /**
-     * Le code unique de la catégorie.
+     * Code unique identifiant la catégorie.
      */
+    @Column(name = "code", nullable = false, unique = true)
     private String code;
 
     /**
-     * La désignation de la catégorie.
+     * Désignation / libellé de la catégorie.
      */
+    @Column(name = "designation", nullable = false)
     private String designation;
 
     /**
-     * Attribut technique pour l'identifiant de l'entreprise.
+     * Liste des produits appartenant à cette catégorie.
      */
-    private Integer idEntreprise;
-
-    /**
-     * La liste des produits appartenant à cette catégorie.
-     */
-    @OneToMany
-    private List<Produits> produits;
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Produit> produits;
 }

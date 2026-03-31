@@ -8,6 +8,7 @@ import com.flickr4java.flickr.auth.Auth;
 import com.flickr4java.flickr.auth.Permission;
 import com.flickr4java.flickr.uploader.UploadMetaData;
 import com.macspace.gestiondestock.services.FlickrService;
+import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,33 +19,33 @@ import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Service d'implémentation pour l'interaction avec l'API Flickr.
- * Cette classe permet de sauvegarder des photos sur Flickr.
+ * Implémentation du service pour l'interaction avec l'API Flickr dans MacSpace.
+ * Permet la sauvegarde et la suppression de photos sur Flickr.
  */
 @Service
 @Slf4j
 public class FlickrServiceImpl implements FlickrService {
 
     /**
-     * Clé API de Flickr, récupérée à partir des propriétés de l'application.
+     * Clé API Flickr.
      */
     @Value("${flickr.apiKey}")
     private String apiKey;
 
     /**
-     * Secret API de Flickr, récupéré à partir des propriétés de l'application.
+     * Secret API Flickr.
      */
     @Value("${flickr.apiSecret}")
     private String apiSecret;
 
     /**
-     * Clé de l'application Flickr, récupérée à partir des propriétés de l'application.
+     * Clé de l'application Flickr.
      */
     @Value("${flickr.appKey}")
     private String appKey;
 
     /**
-     * Secret de l'application Flickr, récupéré à partir des propriétés de l'application.
+     * Secret de l'application Flickr.
      */
     @Value("${flickr.appSecret}")
     private String appSecret;
@@ -52,39 +53,62 @@ public class FlickrServiceImpl implements FlickrService {
     private Flickr flickr;
 
     /**
-     * Sauvegarde une photo sur Flickr.
-     *
-     * @param photo InputStream représentant la photo à télécharger.
-     * @param title Le titre de la photo.
-     * @return L'URL de la photo téléchargée.
-     * @throws InterruptedException Si le thread actuel est interrompu.
-     * @throws ExecutionException Si une exception s'est produite pendant l'exécution de la tâche.
-     * @throws IOException Si une erreur d'entrée/sortie se produit.
-     * @throws FlickrException Si une erreur liée à l'API Flickr se produit.
+     * Initialise la connexion Flickr au démarrage de l'application.
+     */
+    @PostConstruct
+    public void init() {
+        try {
+            connect();
+            log.info("Connexion à Flickr établie avec succès");
+        } catch (Exception e) {
+            log.error("Erreur lors de la connexion à Flickr", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     @SneakyThrows
     public String savePhoto(InputStream photo, String title) {
-        connect();
+        connectIfNeeded();
         UploadMetaData uploadMetaData = new UploadMetaData();
         uploadMetaData.setTitle(title);
-
         String photoId = flickr.getUploader().upload(photo, uploadMetaData);
         return flickr.getPhotosInterface().getPhoto(photoId).getMedium640Url();
     }
 
     /**
-     * Connecte le service à l'API Flickr en utilisant les clés API et les clés d'application.
-     *
-     * @throws InterruptedException Si le thread actuel est interrompu.
-     * @throws ExecutionException Si une exception s'est produite pendant l'exécution de la tâche.
-     * @throws IOException Si une erreur d'entrée/sortie se produit.
-     * @throws FlickrException Si une erreur liée à l'API Flickr se produit.
+     * {@inheritDoc}
      */
-    private void connect() throws InterruptedException, ExecutionException, IOException, FlickrException {
+    @Override
+    @SneakyThrows
+    public void deletePhoto(String photoId) {
+        connectIfNeeded();
+        flickr.getPhotosInterface().delete(photoId);
+        log.info("Photo avec l'ID {} supprimée de Flickr", photoId);
+    }
+
+    /**
+     * Établit la connexion à l'API Flickr si elle n'est pas déjà établie.
+     */
+    private void connectIfNeeded()
+            throws InterruptedException, ExecutionException,
+            IOException, FlickrException {
+        if (flickr == null) {
+            connect();
+        }
+    }
+
+    /**
+     * Établit la connexion à l'API Flickr.
+     */
+    private void connect()
+            throws InterruptedException, ExecutionException,
+            IOException, FlickrException {
         flickr = new Flickr(apiKey, apiSecret, new REST());
         Auth auth = new Auth();
-        auth.setPermission(Permission.READ);
+        auth.setPermission(Permission.WRITE);
         auth.setToken(appKey);
         auth.setTokenSecret(appSecret);
         RequestContext requestContext = RequestContext.getRequestContext();

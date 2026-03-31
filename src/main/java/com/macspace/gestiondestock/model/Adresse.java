@@ -2,64 +2,51 @@ package com.macspace.gestiondestock.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.io.Serializable;
+import lombok.experimental.SuperBuilder;
 
 /**
- * Classe représentant une adresse, utilisée comme composant intégré dans d'autres entités.
- * <p>
- * Cette classe inclut les propriétés suivantes :
- * <ul>
- *   <li>adresse1 : La première ligne de l'adresse.</li>
- *   <li>adresse2 : La deuxième ligne de l'adresse.</li>
- *   <li>ville : La ville de l'adresse.</li>
- *   <li>codePostale : Le code postal de l'adresse.</li>
- *   <li>pays : Le pays de l'adresse.</li>
- * </ul>
- * </p>
- * <p>
- * La classe est annotée avec {@link Embeddable} pour indiquer qu'elle peut être intégrée
- * dans une autre entité JPA. Les annotations Lombok {@link Data}, {@link NoArgsConstructor},
- * {@link AllArgsConstructor}, et {@link EqualsAndHashCode} sont utilisées pour générer
- * automatiquement les méthodes getter, setter, toString, equals et hashCode.
- * </p>
+ * Entité représentant une adresse postale dans MacSpace.
+ *
+ * Utilisée par les entités : Client, Fournisseur, Entreprise, Utilisateur.
+ * Stockée dans la table 'adresse' en base de données.
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
 @Entity
-public class Adresse implements Serializable {
+@Table(name = "adresse")
+public class Adresse extends AbstractEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
     /**
-     * La première ligne de l'adresse.
+     * Première ligne de l'adresse (numéro et nom de rue).
      */
+    @Column(name = "adresse1", nullable = false)
     private String adresse1;
 
     /**
-     * La deuxième ligne de l'adresse.
+     * Deuxième ligne de l'adresse (complément d'adresse).
      */
+    @Column(name = "adresse2")
     private String adresse2;
 
-    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
-    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
-    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
-    private Integer idEntreprise;
-
     /**
-     * La ville de l'adresse.
+     * Ville de l'adresse.
      */
+    @Column(name = "ville", nullable = false)
     private String ville;
 
     /**
-     * Le code postal de l'adresse.
+     * Code postal de l'adresse.
      */
-    private String codePostale;
+    @Column(name = "code_postal", nullable = false)
+    private String codePostal;
 
     /**
-     * Le pays de l'adresse.
+     * Pays de l'adresse.
      */
+    @Column(name = "pays", nullable = false)
     private String pays;
 }

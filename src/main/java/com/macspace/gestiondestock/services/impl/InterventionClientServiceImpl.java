@@ -13,7 +13,7 @@ import com.macspace.gestiondestock.repository.ProduitRepository;
 import com.macspace.gestiondestock.services.InterventionClientService;
 import com.macspace.gestiondestock.services.MvtStkService;
 import com.macspace.gestiondestock.validator.InterventionClientValidator;
-import com.macspace.gestiondestock.validator.ProduitsValidator;
+import com.macspace.gestiondestock.validator.ProduitValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,34 +24,40 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
- * Implémentation du service pour la gestion des interventions client.
+ * Implémentation du service pour la gestion des interventions clients dans MacSpace.
+ *
+ * Gère la création, la modification et la suppression des interventions clients.
+ * Les entités liées (Client, Produit) sont récupérées directement
+ * depuis les repositories pour éviter les problèmes d'entités détachées JPA.
  */
 @Service
 @Slf4j
 public class InterventionClientServiceImpl implements InterventionClientService {
 
-    private InterventionClientRepository interventionClientRepository;
-    private LigneInterventionClientRepository ligneInterventionClientRepository;
-    private ClientRepository clientRepository;
-    private ProduitRepository produitRepository;
-    private MvtStkService mvtStkService;
+    private final InterventionClientRepository interventionClientRepository;
+    private final LigneInterventionClientRepository ligneInterventionClientRepository;
+    private final ClientRepository clientRepository;
+    private final ProduitRepository produitRepository;
+    private final MvtStkService mvtStkService;
 
     /**
-     * Construit une nouvelle instance de {@link InterventionClientServiceImpl} avec les dépôts et services spécifiés.
+     * Constructeur avec injection de dépendances.
      *
-     * @param interventionClientRepository le dépôt pour les interventions client
-     * @param clientRepository le dépôt pour les clients
-     * @param produitRepository le dépôt pour les produits
-     * @param ligneInterventionClientRepository le dépôt pour les lignes d'intervention client
-     * @param mvtStkService le service pour les mouvements de stock
+     * @param interventionClientRepository      Repository JPA des interventions clients.
+     * @param clientRepository                  Repository JPA des clients.
+     * @param produitRepository                 Repository JPA des produits.
+     * @param ligneInterventionClientRepository Repository JPA des lignes d'intervention.
+     * @param mvtStkService                     Service de gestion des mouvements de stock.
      */
     @Autowired
-    public InterventionClientServiceImpl(InterventionClientRepository interventionClientRepository,
-                                         ClientRepository clientRepository, ProduitRepository produitRepository, LigneInterventionClientRepository ligneInterventionClientRepository,
-                                         MvtStkService mvtStkService) {
+    public InterventionClientServiceImpl(
+            InterventionClientRepository interventionClientRepository,
+            ClientRepository clientRepository,
+            ProduitRepository produitRepository,
+            LigneInterventionClientRepository ligneInterventionClientRepository,
+            MvtStkService mvtStkService) {
         this.interventionClientRepository = interventionClientRepository;
         this.ligneInterventionClientRepository = ligneInterventionClientRepository;
         this.clientRepository = clientRepository;
@@ -60,393 +66,468 @@ public class InterventionClientServiceImpl implements InterventionClientService 
     }
 
     /**
-     * Enregistre une nouvelle intervention client ou met à jour une intervention existante.
-     *
-     * @param dto l'objet DTO de l'intervention client à enregistrer ou mettre à jour
-     * @return l'objet DTO de l'intervention client enregistrée ou mise à jour
-     * @throws InvalidEntityException si l'intervention client est invalide ou si des produits sont inexistants
-     * @throws InvalidOperationException si l'intervention est terminée et ne peut être modifiée
+     * {@inheritDoc}
+     * Vérifie l'existence du client et des produits avant sauvegarde.
+     * Utilise les entités attachées à la session Hibernate.
      */
     @Override
     public InterventionClientDto save(InterventionClientDto dto) {
         List<String> errors = InterventionClientValidator.validate(dto);
-
         if (!errors.isEmpty()) {
-            log.error("Intervention client n'est pas valide");
-            throw new InvalidEntityException("L'Intervention client n'est pas valide", ErrorCodes.INTERVENTION_CLIENT_NOT_VALID, errors);
+            log.error("L'intervention client n'est pas valide");
+            throw new InvalidEntityException(
+                    "L'intervention client n'est pas valide",
+                    ErrorCodes.INTERVENTION_CLIENT_NOT_VALID,
+                    errors
+            );
         }
-
         if (dto.getId() != null && dto.isInterventionTerminee()) {
-            throw new InvalidOperationException("Impossible de modifier l'Intervention lorsqu'elle est terminee", ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE);
+            throw new InvalidOperationException(
+                    "Impossible de modifier l'intervention lorsqu'elle est terminée",
+                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE
+            );
         }
 
-        Optional<Client> client = clientRepository.findById(dto.getClient().getId());
-        if (client.isEmpty()) {
-            log.warn("Client with ID {} was not found in the DB", dto.getClient().getId());
-            throw new EntityNotFoundException("Aucun client avec l'ID" + dto.getClient().getId() + " n'a ete trouve dans la BDD",
-                    ErrorCodes.CLIENT_NOT_FOUND);
-        }
+        // Récupérer le client attaché à la session
+        Client client = clientRepository.findById(dto.getClient().getId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucun client avec l'ID "
+                                + dto.getClient().getId() + " n'a été trouvé",
+                        ErrorCodes.CLIENT_NOT_FOUND
+                ));
 
+        // Vérifier l'existence des produits
         List<String> produitErrors = new ArrayList<>();
-
         if (dto.getLigneInterventionClients() != null) {
             dto.getLigneInterventionClients().forEach(ligIntClt -> {
                 if (ligIntClt.getProduit() != null) {
-                    Optional<Produits> produit = produitRepository.findById(ligIntClt.getProduit().getId());
+                    Optional<Produit> produit = produitRepository
+                            .findById(ligIntClt.getProduit().getId());
                     if (produit.isEmpty()) {
-                        produitErrors.add("Le produit avec l'ID " + ligIntClt.getProduit().getId() + " n'existe pas");
+                        produitErrors.add("Le produit avec l'ID "
+                                + ligIntClt.getProduit().getId() + " n'existe pas");
                     }
                 } else {
-                    produitErrors.add("Impossible d'enregister une commande avec un aticle NULL");
+                    produitErrors.add(
+                            "Impossible d'enregistrer une intervention avec un produit NULL"
+                    );
                 }
             });
         }
-
         if (!produitErrors.isEmpty()) {
-            log.warn("");
-            throw new InvalidEntityException("Produit n'existe pas dans la BDD", ErrorCodes.PRODUIT_NOT_FOUND, produitErrors);
+            log.warn("Produits non trouvés dans la base de données");
+            throw new InvalidEntityException(
+                    "Le produit n'existe pas dans la base de données",
+                    ErrorCodes.PRODUIT_NOT_FOUND,
+                    produitErrors
+            );
         }
-        dto.setDateIntervention(Instant.now());
-        InterventionClient savedIntClt = interventionClientRepository.save(InterventionClientDto.toEntity(dto));
 
+        // Construire l'intervention client avec le client attaché
+        dto.setDateIntervention(Instant.now());
+        InterventionClient interventionClient = new InterventionClient();
+        interventionClient.setCode(dto.getCode());
+        interventionClient.setDateIntervention(dto.getDateIntervention());
+        interventionClient.setEtatIntervention(dto.getEtatIntervention());
+        interventionClient.setClient(client);
+        interventionClient.setIdEntreprise(dto.getIdEntreprise());
+
+        InterventionClient savedIntClt = interventionClientRepository
+                .save(interventionClient);
+
+        // Sauvegarder les lignes d'intervention
         if (dto.getLigneInterventionClients() != null) {
             dto.getLigneInterventionClients().forEach(ligIntClt -> {
-                LigneInterventionClient ligneInterventionClient = LigneInterventionClientDto.toEntity(ligIntClt);
-                ligneInterventionClient.setInterventionClient(savedIntClt);
-                LigneInterventionClient savedLigneInt = ligneInterventionClientRepository.save(ligneInterventionClient);
+                // Récupérer le produit attaché
+                Produit produit = produitRepository
+                        .findById(ligIntClt.getProduit().getId())
+                        .orElseThrow(() -> new EntityNotFoundException(
+                                "Produit non trouvé",
+                                ErrorCodes.PRODUIT_NOT_FOUND
+                        ));
 
-                effectuerSortie(savedLigneInt);
+                LigneInterventionClient ligne = new LigneInterventionClient();
+                ligne.setInterventionClient(savedIntClt);
+                ligne.setProduit(produit);
+                ligne.setQuantite(ligIntClt.getQuantite());
+                ligne.setNumeroContrat(ligIntClt.getNumeroContrat());
+                ligne.setProblematique(ligIntClt.getProblematique());
+                ligne.setIdEntreprise(savedIntClt.getIdEntreprise());
+
+                LigneInterventionClient savedLigne =
+                        ligneInterventionClientRepository.save(ligne);
+                effectuerSortie(savedLigne);
             });
         }
-
-        return InterventionClientDto.fromEntity(savedIntClt);
-
-
+        InterventionClient reloadedIntClt = interventionClientRepository
+                .findById(savedIntClt.getId())
+                .orElse(savedIntClt);
+        return InterventionClientDto.fromEntity(reloadedIntClt);
     }
 
     /**
-     * Trouve une intervention client par son ID.
-     *
-     * @param id l'ID de l'intervention client
-     * @return l'objet DTO de l'intervention client trouvée
-     * @throws EntityNotFoundException si aucune intervention client n'est trouvée avec l'ID donné
+     * {@inheritDoc}
      */
     @Override
     public InterventionClientDto findById(Integer id) {
         if (id == null) {
-            log.error("Intervention client ID is NULL");
+            log.error("L'ID de l'intervention client est nul");
             return null;
         }
         return interventionClientRepository.findById(id)
                 .map(InterventionClientDto::fromEntity)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Aucune Intervention client n'a ete trouve avec l'ID " + id, ErrorCodes.INTERVENTION_CLIENT_NOT_FOUND
+                        "Aucune intervention client avec l'ID " + id + " n'a été trouvée",
+                        ErrorCodes.INTERVENTION_CLIENT_NOT_FOUND
                 ));
     }
 
     /**
-     * Trouve une intervention client par son code.
-     *
-     * @param code le code de l'intervention client
-     * @return l'objet DTO de l'intervention client trouvée
-     * @throws EntityNotFoundException si aucune intervention client n'est trouvée avec le code donné
+     * {@inheritDoc}
      */
     @Override
     public InterventionClientDto findByCode(String code) {
         if (!StringUtils.hasLength(code)) {
-            log.error("Intervention client CODE is NULL");
+            log.error("Le code de l'intervention client est nul");
             return null;
         }
         return interventionClientRepository.findInterventionClientByCode(code)
                 .map(InterventionClientDto::fromEntity)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Aucune Intervention client n'a ete trouve avec le CODE " + code, ErrorCodes.INTERVENTION_CLIENT_NOT_FOUND
+                        "Aucune intervention client avec le CODE " + code + " n'a été trouvée",
+                        ErrorCodes.INTERVENTION_CLIENT_NOT_FOUND
                 ));
     }
 
     /**
-     * Récupère toutes les interventions client.
-     *
-     * @return une liste de tous les objets DTO des interventions client
+     * {@inheritDoc}
      */
     @Override
     public List<InterventionClientDto> findAll() {
         return interventionClientRepository.findAll().stream()
                 .map(InterventionClientDto::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
-     * Supprime une intervention client par son ID.
-     *
-     * @param id l'ID de l'intervention client à supprimer
-     * @throws InvalidOperationException si l'intervention client est déjà utilisée dans des lignes d'intervention
+     * {@inheritDoc}
+     */
+    @Override
+    public List<InterventionClientDto> findAllByClient(Integer idClient) {
+        return interventionClientRepository.findAllByClientId(idClient)
+                .stream()
+                .map(InterventionClientDto::fromEntity)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<InterventionClientDto> findAllByEtatIntervention(
+            EtatIntervention etatIntervention) {
+        return interventionClientRepository
+                .findAllByEtatIntervention(etatIntervention)
+                .stream()
+                .map(InterventionClientDto::fromEntity)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<InterventionClientDto> findAllByIdEntreprise(Integer idEntreprise) {
+        return interventionClientRepository.findAllByIdEntreprise(idEntreprise)
+                .stream()
+                .map(InterventionClientDto::fromEntity)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<LigneInterventionClientDto> findAllLignesInterventionsClientByInterventionClientId(
+            Integer idIntervention) {
+        return ligneInterventionClientRepository
+                .findAllByInterventionClientId(idIntervention).stream()
+                .map(LigneInterventionClientDto::fromEntity)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public void delete(Integer id) {
         if (id == null) {
-            log.error("Commande client ID is NULL");
+            log.error("L'ID de l'intervention client est nul");
             return;
         }
-        List<LigneInterventionClient> ligneInterventionClients = ligneInterventionClientRepository.findAllByInterventionClientId(id);
+        List<LigneInterventionClient> ligneInterventionClients =
+                ligneInterventionClientRepository.findAllByInterventionClientId(id);
         if (!ligneInterventionClients.isEmpty()) {
-            throw new InvalidOperationException("Impossible de supprimer une commande client deja utilisee",
-                    ErrorCodes.INTERVENTION_CLIENT_ALREADY_IN_USE);
+            throw new InvalidOperationException(
+                    "Impossible de supprimer une intervention client déjà utilisée",
+                    ErrorCodes.INTERVENTION_CLIENT_ALREADY_IN_USE
+            );
         }
         interventionClientRepository.deleteById(id);
     }
 
     /**
-     * Récupère toutes les lignes d'intervention client pour un ID d'intervention donné.
-     *
-     * @param idIntervention l'ID de l'intervention client
-     * @return une liste de tous les objets DTO des lignes d'intervention client
+     * {@inheritDoc}
+     * Récupère l'intervention depuis la BDD et met à jour son état.
      */
     @Override
-    public List<LigneInterventionClientDto> findAllLignesInterventionsClientByInterventionClientId(Integer idIntervention) {
-        return ligneInterventionClientRepository.findAllByInterventionClientId(idIntervention).stream()
-                .map(LigneInterventionClientDto::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Met à jour l'état d'une intervention client.
-     *
-     * @param idIntervention l'ID de l'intervention à mettre à jour
-     * @param etatIntervention le nouvel état de l'intervention
-     * @return l'objet DTO de l'intervention client mise à jour
-     * @throws InvalidOperationException si l'état est nul ou si l'intervention est terminée
-     */
-    @Override
-    public InterventionClientDto updateEtatIntervention(Integer idIntervention, EtatIntervention etatIntervention) {
+    public InterventionClientDto updateEtatIntervention(Integer idIntervention,
+                                                        EtatIntervention etatIntervention) {
         checkIdIntervention(idIntervention);
-        if (!StringUtils.hasLength(String.valueOf(etatIntervention))) {
-            log.error("L'etat de l'Intervention client is NULL");
-            throw new InvalidOperationException("Impossible de modifier l'etat de l'Intervention avec un etat null",
-                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE);
+        if (etatIntervention == null) {
+            log.error("L'état de l'intervention client est nul");
+            throw new InvalidOperationException(
+                    "Impossible de modifier l'état de l'intervention avec un état null",
+                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE
+            );
         }
-        InterventionClientDto interventionClient = checkEtatIntervention(idIntervention);
-        interventionClient.setEtatIntervention(etatIntervention);
+        InterventionClientDto interventionClientDto =
+                checkEtatIntervention(idIntervention);
 
-        InterventionClient savedCmdClt = interventionClientRepository.save(InterventionClientDto.toEntity(interventionClient));
-        if (interventionClient.isInterventionTerminee()) {
+        // Récupérer l'entité attachée et modifier directement
+        InterventionClient interventionClient = interventionClientRepository
+                .findById(idIntervention)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Intervention client non trouvée",
+                        ErrorCodes.INTERVENTION_CLIENT_NOT_FOUND
+                ));
+        interventionClient.setEtatIntervention(etatIntervention);
+        InterventionClient savedIntClt = interventionClientRepository
+                .save(interventionClient);
+
+        if (interventionClientDto.isInterventionTerminee()) {
             updateMvtStk(idIntervention);
         }
-
-        return InterventionClientDto.fromEntity(savedCmdClt);
+        return InterventionClientDto.fromEntity(savedIntClt);
     }
 
     /**
-     * Met à jour la quantité d'une ligne d'intervention client.
-     *
-     * @param idIntervention l'ID de l'intervention
-     * @param idLigneIntervention l'ID de la ligne d'intervention à mettre à jour
-     * @param quantite la nouvelle quantité
-     * @return l'objet DTO de l'intervention client mise à jour
-     * @throws InvalidOperationException si la quantité est nulle ou zéro
+     * {@inheritDoc}
      */
     @Override
-    public InterventionClientDto updateQuantiteIntervention(Integer idIntervention, Integer idLigneIntervention, BigDecimal quantite) {
+    public InterventionClientDto updateQuantiteIntervention(Integer idIntervention,
+                                                            Integer idLigneIntervention,
+                                                            BigDecimal quantite) {
         checkIdIntervention(idIntervention);
         checkIdLigneIntervention(idLigneIntervention);
-
-        if (quantite == null || quantite.compareTo(BigDecimal.ZERO) == 0) {
-            log.error("L'ID de la ligne Intervention is NULL");
-            throw new InvalidOperationException("Impossible de modifier l'etat de l'Intervention avec une quantite null ou ZERO",
-                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE);
+        if (quantite == null || quantite.compareTo(BigDecimal.ZERO) <= 0) {
+            log.error("La quantité de la ligne d'intervention est invalide");
+            throw new InvalidOperationException(
+                    "Impossible de modifier l'intervention avec une quantité nulle ou inférieure à 0",
+                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE
+            );
         }
-
-        InterventionClientDto interventionClient = checkEtatIntervention(idIntervention);
-        Optional<LigneInterventionClient> ligneInterventionClientOptional = findLigneInterventionClient(idLigneIntervention);
-
-        LigneInterventionClient ligneInterventionClient = ligneInterventionClientOptional.get();
+        InterventionClientDto interventionClient =
+                checkEtatIntervention(idIntervention);
+        Optional<LigneInterventionClient> ligneInterventionClientOptional =
+                findLigneInterventionClient(idLigneIntervention);
+        LigneInterventionClient ligneInterventionClient =
+                ligneInterventionClientOptional.get();
         ligneInterventionClient.setQuantite(quantite);
         ligneInterventionClientRepository.save(ligneInterventionClient);
-
         return interventionClient;
     }
 
     /**
-     * Met à jour le client d'une intervention.
-     *
-     * @param idIntervention l'ID de l'intervention à mettre à jour
-     * @param idClient l'ID du nouveau client
-     * @return l'objet DTO de l'intervention client mise à jour
-     * @throws InvalidOperationException si l'ID du client est nul
-     * @throws EntityNotFoundException si aucun client n'est trouvé avec l'ID donné
+     * {@inheritDoc}
      */
     @Override
-    public InterventionClientDto updateClient(Integer idIntervention, Integer idClient) {
+    public InterventionClientDto updateClient(Integer idIntervention,
+                                              Integer idClient) {
         checkIdIntervention(idIntervention);
         if (idClient == null) {
-            log.error("L'ID du client is NULL");
-            throw new InvalidOperationException("Impossible de modifier l'etat de l'Intervention avec un ID client null",
-                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE);
+            log.error("L'ID du client est nul");
+            throw new InvalidOperationException(
+                    "Impossible de modifier l'intervention avec un ID client null",
+                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE
+            );
         }
-        InterventionClientDto interventionClient = checkEtatIntervention(idIntervention);
-        Optional<Client> clientOptional = clientRepository.findById(idClient);
-        if (clientOptional.isEmpty()) {
-            throw new EntityNotFoundException(
-                    "Aucun client n'a ete trouve avec l'ID " + idClient, ErrorCodes.CLIENT_NOT_FOUND);
-        }
-        interventionClient.setClient(ClientDto.fromEntity(clientOptional.get()));
+        checkEtatIntervention(idIntervention);
 
+        // Récupérer les entités attachées
+        Client client = clientRepository.findById(idClient)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucun client avec l'ID " + idClient + " n'a été trouvé",
+                        ErrorCodes.CLIENT_NOT_FOUND
+                ));
+        InterventionClient intervention = interventionClientRepository
+                .findById(idIntervention)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Intervention client non trouvée",
+                        ErrorCodes.INTERVENTION_CLIENT_NOT_FOUND
+                ));
+        intervention.setClient(client);
         return InterventionClientDto.fromEntity(
-                interventionClientRepository.save(InterventionClientDto.toEntity(interventionClient))
+                interventionClientRepository.save(intervention)
         );
     }
 
     /**
-     * Met à jour le produit d'une ligne d'intervention client.
-     *
-     * @param idIntervention l'ID de l'intervention
-     * @param idLigneIntervention l'ID de la ligne d'intervention
-     * @param idProduit l'ID du nouveau produit
-     * @return l'objet DTO de l'intervention client mise à jour
-     * @throws InvalidOperationException si l'ID du produit est nul
-     * @throws EntityNotFoundException si aucun produit n'est trouvé avec l'ID donné
-     * @throws InvalidEntityException si le produit est invalide
+     * {@inheritDoc}
      */
     @Override
-    public InterventionClientDto updateProduit(Integer idIntervention, Integer idLigneIntervention, Integer idProduit) {
+    public InterventionClientDto updateProduit(Integer idIntervention,
+                                               Integer idLigneIntervention,
+                                               Integer idProduit) {
         checkIdIntervention(idIntervention);
         checkIdLigneIntervention(idLigneIntervention);
         checkIdProduit(idProduit, "nouveau");
-
-        InterventionClientDto interventionClient = checkEtatIntervention(idIntervention);
-
-        Optional<LigneInterventionClient> ligneInterventionClient = findLigneInterventionClient(idLigneIntervention);
-
-        Optional<Produits> produitOptional = produitRepository.findById(idProduit);
-        if (produitOptional.isEmpty()) {
-            throw new EntityNotFoundException(
-                    "Aucun produit n'a ete trouve avec l'ID " + idProduit, ErrorCodes.PRODUIT_NOT_FOUND);
-        }
-
-        List<String> errors = ProduitsValidator.validate(ProduitDto.fromEntity(produitOptional.get()));
+        InterventionClientDto interventionClient =
+                checkEtatIntervention(idIntervention);
+        Optional<LigneInterventionClient> ligneInterventionClient =
+                findLigneInterventionClient(idLigneIntervention);
+        Produit produit = produitRepository.findById(idProduit)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucun produit avec l'ID " + idProduit + " n'a été trouvé",
+                        ErrorCodes.PRODUIT_NOT_FOUND
+                ));
+        List<String> errors = ProduitValidator.validate(
+                ProduitDto.fromEntity(produit));
         if (!errors.isEmpty()) {
-            throw new InvalidEntityException("Produit invalid", ErrorCodes.PRODUIT_NOT_VALID, errors);
+            throw new InvalidEntityException(
+                    "Produit invalide",
+                    ErrorCodes.PRODUIT_NOT_VALID,
+                    errors
+            );
         }
-
-        LigneInterventionClient ligneInterventionClientToSaved = ligneInterventionClient.get();
-        ligneInterventionClientToSaved.setProduit(produitOptional.get());
-        ligneInterventionClientRepository.save(ligneInterventionClientToSaved);
-
+        LigneInterventionClient ligneToSave = ligneInterventionClient.get();
+        ligneToSave.setProduit(produit);
+        ligneInterventionClientRepository.save(ligneToSave);
         return interventionClient;
     }
 
     /**
-     * Supprime un produit d'une ligne d'intervention client.
-     *
-     * @param idIntervention l'ID de l'intervention
-     * @param idLigneIntervention l'ID de la ligne d'intervention
-     * @return l'objet DTO de l'intervention client mise à jour
-     * @throws InvalidOperationException si l'ID de l'intervention ou de la ligne d'intervention est nul
+     * {@inheritDoc}
      */
     @Override
-    public InterventionClientDto deleteProduit(Integer idIntervention, Integer idLigneIntervention) {
+    public InterventionClientDto deleteProduit(Integer idIntervention,
+                                               Integer idLigneIntervention) {
         checkIdIntervention(idIntervention);
         checkIdLigneIntervention(idLigneIntervention);
-
-        InterventionClientDto interventionClient = checkEtatIntervention(idIntervention);
-        // Just to check the LigneInterventionClient and inform the client in case it is absent
+        InterventionClientDto interventionClient =
+                checkEtatIntervention(idIntervention);
         findLigneInterventionClient(idLigneIntervention);
         ligneInterventionClientRepository.deleteById(idLigneIntervention);
-
         return interventionClient;
     }
 
+    // ===== Méthodes privées =====
 
     /**
-     * Vérifie l'état d'une intervention client avant modification.
+     * Vérifie et retourne l'intervention si elle n'est pas terminée.
      *
-     * @param idIntervention l'ID de l'intervention à vérifier
-     * @return l'objet DTO de l'intervention client si l'état est modifiable
-     * @throws InvalidOperationException si l'intervention est déjà terminée
+     * @param idIntervention L'ID de l'intervention à vérifier.
+     * @return Le DTO de l'intervention si modifiable.
+     * @throws InvalidOperationException Si l'intervention est terminée.
      */
     private InterventionClientDto checkEtatIntervention(Integer idIntervention) {
         InterventionClientDto interventionClient = findById(idIntervention);
         if (interventionClient.isInterventionTerminee()) {
-            throw new InvalidOperationException("Impossible de modifier l'intervention lorsqu'elle est terminer", ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE);
+            throw new InvalidOperationException(
+                    "Impossible de modifier l'intervention lorsqu'elle est terminée",
+                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE
+            );
         }
         return interventionClient;
     }
 
     /**
-     * Trouve une ligne d'intervention client par son ID.
+     * Recherche une ligne d'intervention client par son ID.
      *
-     * @param idLigneIntervention l'ID de la ligne d'intervention
-     * @return une option contenant la ligne d'intervention client si trouvée
-     * @throws EntityNotFoundException si aucune ligne d'intervention client n'est trouvée avec l'ID donné
+     * @param idLigneIntervention L'ID de la ligne d'intervention.
+     * @return La ligne d'intervention trouvée.
+     * @throws EntityNotFoundException Si la ligne n'existe pas.
      */
-    private Optional<LigneInterventionClient> findLigneInterventionClient(Integer idLigneIntervention) {
-        Optional<LigneInterventionClient> ligneInterventionClientOptional = ligneInterventionClientRepository.findById(idLigneIntervention);
-        if (ligneInterventionClientOptional.isEmpty()) {
+    private Optional<LigneInterventionClient> findLigneInterventionClient(
+            Integer idLigneIntervention) {
+        Optional<LigneInterventionClient> ligneOptional =
+                ligneInterventionClientRepository.findById(idLigneIntervention);
+        if (ligneOptional.isEmpty()) {
             throw new EntityNotFoundException(
-                    "Aucune ligne Intervention client n'a ete trouve avec l'ID " + idLigneIntervention, ErrorCodes.INTERVENTION_CLIENT_NOT_FOUND);
+                    "Aucune ligne d'intervention client avec l'ID "
+                            + idLigneIntervention + " n'a été trouvée",
+                    ErrorCodes.INTERVENTION_CLIENT_NOT_FOUND
+            );
         }
-        return ligneInterventionClientOptional;
+        return ligneOptional;
     }
 
     /**
-     * Vérifie que l'ID de l'intervention client n'est pas nul.
+     * Vérifie que l'ID de l'intervention n'est pas nul.
      *
-     * @param idIntervention l'ID de l'intervention à vérifier
-     * @throws InvalidOperationException si l'ID est nul
+     * @param idIntervention L'ID à vérifier.
+     * @throws InvalidOperationException Si l'ID est nul.
      */
     private void checkIdIntervention(Integer idIntervention) {
         if (idIntervention == null) {
-            log.error("Intervention client ID is NULL");
-            throw new InvalidOperationException("Impossible de modifier l'etat de l'Intervention avec un ID null",
-                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE);
+            log.error("L'ID de l'intervention client est nul");
+            throw new InvalidOperationException(
+                    "Impossible de modifier l'intervention avec un ID null",
+                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE
+            );
         }
     }
 
     /**
      * Vérifie que l'ID de la ligne d'intervention n'est pas nul.
      *
-     * @param idLigneIntervention l'ID de la ligne d'intervention à vérifier
-     * @throws InvalidOperationException si l'ID est nul
+     * @param idLigneIntervention L'ID à vérifier.
+     * @throws InvalidOperationException Si l'ID est nul.
      */
     private void checkIdLigneIntervention(Integer idLigneIntervention) {
         if (idLigneIntervention == null) {
-            log.error("L'ID de la ligne Intervention is NULL");
-            throw new InvalidOperationException("Impossible de modifier l'etat de l'Intervention avec une ligne d'Intervention null",
-                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE);
+            log.error("L'ID de la ligne d'intervention est nul");
+            throw new InvalidOperationException(
+                    "Impossible de modifier l'intervention avec une ligne d'intervention null",
+                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE
+            );
         }
     }
 
     /**
      * Vérifie que l'ID du produit n'est pas nul.
      *
-     * @param idProduit l'ID du produit à vérifier
-     * @param msg le message utilisé dans le cas d'erreur
-     * @throws InvalidOperationException si l'ID est nul
+     * @param idProduit L'ID à vérifier.
+     * @param msg       Message contextuel pour le log.
+     * @throws InvalidOperationException Si l'ID est nul.
      */
     private void checkIdProduit(Integer idProduit, String msg) {
         if (idProduit == null) {
-            log.error("L'ID de " + msg + " is NULL");
-            throw new InvalidOperationException("Impossible de modifier l'etat de l'intervention avec un " + msg + " ID produit null",
-                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE);
+            log.error("L'ID du {} produit est nul", msg);
+            throw new InvalidOperationException(
+                    "Impossible de modifier l'intervention avec un ID "
+                            + msg + " produit null",
+                    ErrorCodes.INTERVENTION_CLIENT_NON_MODIFIABLE
+            );
         }
     }
 
     /**
-     * Met à jour les mouvements de stock pour une intervention client terminée.
+     * Met à jour les mouvements de stock pour une intervention terminée.
      *
-     * @param idIntervention l'ID de l'intervention client dont les mouvements de stock doivent être mis à jour
+     * @param idIntervention L'ID de l'intervention terminée.
      */
     private void updateMvtStk(Integer idIntervention) {
-        List<LigneInterventionClient> ligneInterventionClients = ligneInterventionClientRepository.findAllByInterventionClientId(idIntervention);
-        ligneInterventionClients.forEach(lig -> {
-            effectuerSortie(lig);
-        });
+        List<LigneInterventionClient> ligneInterventionClients =
+                ligneInterventionClientRepository
+                        .findAllByInterventionClientId(idIntervention);
+        ligneInterventionClients.forEach(this::effectuerSortie);
     }
 
     /**
-     * Effectue une sortie de stock pour une ligne d'intervention client donnée.
+     * Enregistre un mouvement de sortie de stock pour une ligne d'intervention.
      *
-     * @param lig la ligne d'intervention client pour laquelle la sortie doit être effectuée
+     * @param lig La ligne d'intervention client.
      */
     private void effectuerSortie(LigneInterventionClient lig) {
         MvtStkDto mvtStkDto = MvtStkDto.builder()
@@ -454,8 +535,8 @@ public class InterventionClientServiceImpl implements InterventionClientService 
                 .dateMvt(Instant.now())
                 .typeMvt(TypeMvtStk.SORTIE)
                 .sourceMvt(SourceMvtStk.INTERVENTION_CLIENT)
-                //.quantite(lig.getQuantite())
-                //.idEntreprise(lig.getIdEntreprise())
+                .quantite(lig.getQuantite())
+                .idEntreprise(lig.getIdEntreprise())
                 .build();
         mvtStkService.sortieStock(mvtStkDto);
     }

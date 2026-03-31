@@ -1,88 +1,66 @@
 package com.macspace.gestiondestock.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-
+import lombok.experimental.SuperBuilder;
 
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 /**
- * La classe InterventionClient représente une intervention réalisée pour un client.
- * Elle inclut des informations sur l'intervention telles que le code, la date,
- * le client associé, et les lignes d'intervention.
+ * Entité représentant une intervention réalisée pour un client dans MacSpace.
  *
- * <p>Cette classe hérite de la classe AbstractEntity qui fournit un identifiant unique.</p>
- *
- * <p>Annotations utilisées :</p>
- * <ul>
- *   <li>@Data : Génère les getters, setters, toString, equals et hashCode automatiquement.</li>
- *   <li>@NoArgsConstructor : Génère un constructeur sans arguments.</li>
- *   <li>@AllArgsConstructor : Génère un constructeur avec tous les arguments.</li>
- *   <li>@EqualsAndHashCode(callSuper= true) : Inclut les champs de la classe parente dans les méthodes equals et hashCode.</li>
- *   <li>@Entity : Spécifie que cette classe est une entité JPA.</li>
- *   <li>@Table(name = "interventionclient") : Spécifie le nom de la table correspondante dans la base de données.</li>
- * </ul>
- *
- * <p>Les relations Many-to-One et One-to-Many sont utilisées pour associer cette entité aux entités Client et LigneInterventionClient.</p>
- *
- * <p>Exemple d'utilisation :</p>
- * <pre>{@code
- * InterventionClient interventionClient = new InterventionClient();
- * interventionClient.setCode("INT123");
- * interventionClient.setDateIntervention(Instant.now());
- * interventionClient.setClient(client);
- * interventionClient.setLigneInterventionClients(ligneInterventionClients);
- * }</pre>
- *
- * @see AbstractEntity
- * @see Client
- * @see LigneInterventionClient
+ * Une intervention client est liée à un client spécifique
+ * et contient plusieurs lignes d'intervention détaillant
+ * les produits et services fournis.
+ * Mappée à la table 'interventionclient' en base de données.
  */
-@Data
-
+@Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "interventionclient")
 public class InterventionClient extends AbstractEntity {
-    public InterventionClient(){
-        this.dateIntervention = new Date();
-    }
 
     /**
-     * Le code unique de l'intervention.
+     * Code unique identifiant l'intervention client.
      */
+    @Column(name = "code", nullable = false, unique = true)
     private String code;
 
     /**
-     * La date de l'intervention.
+     * Date à laquelle l'intervention a été réalisée.
      */
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date dateIntervention;
+    @Column(name = "date_intervention", nullable = false)
+    @Builder.Default
+    private Instant dateIntervention = Instant.now();
 
-    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
-    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
-    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
-    private Integer idEntreprise;
-
+    /**
+     * État actuel de l'intervention.
+     */
     @Enumerated(EnumType.STRING)
+    @Column(name = "etat_intervention", nullable = false)
     private EtatIntervention etatIntervention;
 
     /**
-     * Le client associé à cette intervention.
-     *
-     * <p>La relation Many-to-One signifie que plusieurs interventions peuvent être liées à un seul client.</p>
+     * Client associé à cette intervention.
+     * EAGER pour éviter le LazyInitializationException
+     * lors de la conversion en DTO hors session Hibernate.
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_client", referencedColumnName = "id")
+    @JsonIgnore
     private Client client;
 
     /**
-     * La liste des lignes d'intervention associées à cette intervention client.
-     *
-     * <p>La relation One-to-Many signifie qu'une intervention peut avoir plusieurs lignes d'intervention.</p>
+     * Liste des lignes d'intervention associées.
+     * EAGER pour retourner les lignes dans la réponse.
      */
-    @OneToMany
+    @OneToMany(mappedBy = "interventionClient", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<LigneInterventionClient> ligneInterventionClients;
 }

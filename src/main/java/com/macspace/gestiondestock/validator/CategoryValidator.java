@@ -7,26 +7,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * La classe CategoryValidator fournit des méthodes pour valider les objets {@link CategoryDto}.
- * <p>
- * La validation permet de s'assurer que les données de l'entité respectent certaines règles de cohérence.
+ * Validator pour l'entité {@link CategoryDto} dans MacSpace.
+ * Vérifie que les données de catégorie sont complètes et valides
+ * avant tout traitement ou persistance.
  */
 public class CategoryValidator {
 
     /**
-     * Valide un objet {@link CategoryDto}.
-     * <p>
-     * Cette méthode vérifie que le champ 'code' de la catégorie est renseigné. Si ce champ est vide ou nul,
-     * un message d'erreur est ajouté à la liste des erreurs.
+     * Valide un {@link CategoryDto}.
      *
-     * @param categoryDto l'objet {@link CategoryDto} à valider
-     * @return une liste de chaînes de caractères contenant les messages d'erreur.
-     *         La liste est vide si aucune erreur n'est trouvée.
+     * @param categoryDto Le DTO à valider.
+     * @return La liste des erreurs de validation,
+     *         vide si toutes les données sont valides.
      */
     public static List<String> validate(CategoryDto categoryDto) {
         List<String> errors = new ArrayList<>();
+
+        if (categoryDto == null) {
+            errors.add("Veuillez renseigner le code de la catégorie");
+            errors.add("Veuillez renseigner la désignation de la catégorie");
+            return errors;
+        }
         if (!StringUtils.hasLength(categoryDto.getCode())) {
-            errors.add("Veuillez renseigner le code de la categorie");
+            errors.add("Veuillez renseigner le code de la catégorie");
+        }
+        if (!StringUtils.hasLength(categoryDto.getDesignation())) {
+            errors.add("Veuillez renseigner la désignation de la catégorie");
         }
         return errors;
     }

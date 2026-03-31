@@ -6,37 +6,33 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 /**
- * Repository pour l'entité {@link LigneIntervention}.
- * <p>
- * Cette interface permet d'effectuer des opérations CRUD (Créer, Lire, Mettre à jour, Supprimer)
- * sur les entités {@link LigneIntervention}. Elle étend l'interface {@link JpaRepository}, ce qui fournit
- * des méthodes prédéfinies pour interagir avec la base de données.
- * </p>
- *
+ * Repository pour gérer les entités {@link LigneIntervention}.
+ * Fournit les opérations CRUD et des requêtes
+ * personnalisées sur la table 'ligneintervention'.
  */
 public interface LigneInterventionRepository extends JpaRepository<LigneIntervention, Integer> {
 
     /**
-     * Trouve toutes les lignes d'intervention associées à un produit donné.
-     * <p>
-     * Cette méthode retourne une liste de {@link LigneIntervention} pour toutes les lignes associées
-     * à un produit identifié par son ID.
-     * </p>
+     * Trouve toutes les lignes d'intervention d'un produit.
      *
-     * @param idProduit l'identifiant du produit pour lequel trouver les lignes d'intervention
-     * @return une liste de {@link LigneIntervention} associées au produit
+     * @param idProduit L'identifiant du produit.
+     * @return La liste des lignes d'intervention du produit.
      */
     List<LigneIntervention> findAllByProduitId(Integer idProduit);
 
     /**
-     * Trouve toutes les lignes d'intervention associées à une intervention donnée.
-     * <p>
-     * Cette méthode retourne une liste de {@link LigneIntervention} pour toutes les lignes associées
-     * à une intervention identifiée par son ID.
-     * </p>
+     * Trouve toutes les lignes d'une intervention.
      *
-     * @param id l'identifiant de l'intervention pour laquelle trouver les lignes d'intervention
-     * @return une liste de {@link LigneIntervention} associées à l'intervention
+     * @param idIntervention L'identifiant de l'intervention.
+     * @return La liste des lignes de l'intervention.
      */
-    List<LigneIntervention> findAllByInterventionsId(Integer id);
+    List<LigneIntervention> findAllByInterventionId(Integer idIntervention);
+
+    /**
+     * Trouve toutes les lignes d'intervention d'une entreprise.
+     *
+     * @param idEntreprise L'identifiant de l'entreprise.
+     * @return La liste des lignes de l'entreprise.
+     */
+    List<LigneIntervention> findAllByIdEntreprise(Integer idEntreprise);
 }

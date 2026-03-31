@@ -1,35 +1,34 @@
 package com.macspace.gestiondestock.dto.auth;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * Représente une demande d'authentification contenant les informations nécessaires pour
- * identifier un utilisateur et vérifier ses informations d'identification.
- * <p>
- * Cette classe est utilisée pour encapsuler les données de connexion (login et mot de passe)
- * qui seront envoyées lors d'une tentative de connexion.
- * </p>
+ * DTO représentant une demande d'authentification dans MacSpace.
+ * Contient les informations nécessaires pour identifier
+ * et authentifier un utilisateur.
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AuthenticationRequest {
 
     /**
-     * Le nom d'utilisateur ou l'identifiant de l'utilisateur qui souhaite se connecter.
-     * <p>
-     * Ce champ est utilisé pour identifier de manière unique l'utilisateur dans le système.
-     * </p>
+     * Adresse email de l'utilisateur.
+     * Utilisée comme identifiant unique de connexion.
      */
-    private String login;
+    @NotBlank(message = "L'email est obligatoire")
+    @Email(message = "L'email doit être valide")
+    private String email;
 
     /**
-     * Le mot de passe de l'utilisateur pour la connexion.
-     * <p>
-     * Ce champ est utilisé pour vérifier l'identité de l'utilisateur et autoriser l'accès
-     * aux ressources protégées.
-     * </p>
+     * Mot de passe de l'utilisateur.
      */
+    @NotBlank(message = "Le mot de passe est obligatoire")
     private String password;
-
 }

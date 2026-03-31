@@ -9,11 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 /**
- * Contrôleur pour la gestion des produits.
- * <p>
- * Ce contrôleur implémente les méthodes définies dans l'interface {@link ProduitApi}
- * et délègue les appels aux services correspondants.
- * </p>
+ * Contrôleur REST pour la gestion des produits dans MacSpace.
+ * Implémente les endpoints définis dans {@link ProduitApi}.
  */
 @RestController
 public class ProduitController implements ProduitApi {
@@ -21,7 +18,7 @@ public class ProduitController implements ProduitApi {
     private final ProduitService produitService;
 
     /**
-     * Constructeur avec injection de dépendance.
+     * Constructeur avec injection de dépendances.
      *
      * @param produitService Le service de gestion des produits.
      */
@@ -35,7 +32,6 @@ public class ProduitController implements ProduitApi {
      */
     @Override
     public ProduitDto save(ProduitDto dto) {
-        // Délègue l'enregistrement ou la mise à jour du produit au service
         return produitService.save(dto);
     }
 
@@ -44,7 +40,6 @@ public class ProduitController implements ProduitApi {
      */
     @Override
     public ProduitDto findById(Integer id) {
-        // Délègue la recherche du produit par son identifiant au service
         return produitService.findById(id);
     }
 
@@ -53,7 +48,6 @@ public class ProduitController implements ProduitApi {
      */
     @Override
     public ProduitDto findByCodeProduit(String codeProduit) {
-        // Délègue la recherche du produit par son code au service
         return produitService.findByCodeProduit(codeProduit);
     }
 
@@ -62,7 +56,6 @@ public class ProduitController implements ProduitApi {
      */
     @Override
     public List<ProduitDto> findAll() {
-        // Délègue la récupération de tous les produits au service
         return produitService.findAll();
     }
 
@@ -70,8 +63,31 @@ public class ProduitController implements ProduitApi {
      * {@inheritDoc}
      */
     @Override
+    public List<ProduitDto> findAllByCategory(Integer idCategory) {
+        return produitService.findAllByCategory(idCategory);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ProduitDto> findAllByFournisseur(Integer idFournisseur) {
+        return produitService.findAllByFournisseur(idFournisseur);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ProduitDto> findAllByIdEntreprise(Integer idEntreprise) {
+        return produitService.findAllByIdEntreprise(idEntreprise);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void delete(Integer id) {
-        // Délègue la suppression du produit par son identifiant au service
         produitService.delete(id);
     }
 }

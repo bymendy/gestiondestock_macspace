@@ -1,33 +1,28 @@
 package com.macspace.gestiondestock.controller;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 import com.macspace.gestiondestock.controller.api.MvtStkApi;
 import com.macspace.gestiondestock.dto.MvtStkDto;
+import com.macspace.gestiondestock.model.TypeMvtStk;
 import com.macspace.gestiondestock.services.MvtStkService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 /**
- * Contrôleur pour la gestion des mouvements de stock.
- * <p>
- * Ce contrôleur implémente les opérations définies dans l'API {@link MvtStkApi} pour gérer
- * les mouvements de stock, y compris les entrées, les sorties, et les corrections de stock.
- * </p>
+ * Contrôleur REST pour la gestion des mouvements de stock dans MacSpace.
+ * Implémente les endpoints définis dans {@link MvtStkApi}.
  */
 @RestController
 public class MvtStkController implements MvtStkApi {
 
-    private MvtStkService service;
+    private final MvtStkService service;
 
     /**
-     * Constructeur du contrôleur.
-     * <p>
-     * Initialise le contrôleur avec le service de gestion des mouvements de stock.
-     * </p>
+     * Constructeur avec injection de dépendances.
      *
-     * @param service le service de gestion des mouvements de stock à utiliser
+     * @param service Le service de gestion des mouvements de stock.
      */
     @Autowired
     public MvtStkController(MvtStkService service) {
@@ -35,13 +30,7 @@ public class MvtStkController implements MvtStkApi {
     }
 
     /**
-     * Récupère le stock réel d'un produit.
-     * <p>
-     * Retourne la quantité actuelle en stock pour le produit spécifié par son identifiant.
-     * </p>
-     *
-     * @param idProduit l'identifiant du produit pour lequel obtenir le stock réel
-     * @return la quantité actuelle en stock du produit
+     * {@inheritDoc}
      */
     @Override
     public BigDecimal stockReelProduit(Integer idProduit) {
@@ -49,13 +38,7 @@ public class MvtStkController implements MvtStkApi {
     }
 
     /**
-     * Récupère la liste des mouvements de stock pour un produit.
-     * <p>
-     * Retourne une liste de mouvements de stock pour le produit identifié par son identifiant.
-     * </p>
-     *
-     * @param idProduit l'identifiant du produit pour lequel obtenir les mouvements de stock
-     * @return une liste des mouvements de stock pour le produit
+     * {@inheritDoc}
      */
     @Override
     public List<MvtStkDto> mvtStkProduit(Integer idProduit) {
@@ -63,13 +46,23 @@ public class MvtStkController implements MvtStkApi {
     }
 
     /**
-     * Enregistre une entrée de stock.
-     * <p>
-     * Traite une entrée de stock basée sur les informations fournies dans le DTO.
-     * </p>
-     *
-     * @param dto l'objet de transfert de données contenant les informations sur l'entrée de stock
-     * @return l'objet de transfert de données mis à jour après l'ajout de l'entrée de stock
+     * {@inheritDoc}
+     */
+    @Override
+    public List<MvtStkDto> findAllByTypeMvt(TypeMvtStk typeMvt) {
+        return service.findAllByTypeMvt(typeMvt);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<MvtStkDto> findAllByIdEntreprise(Integer idEntreprise) {
+        return service.findAllByIdEntreprise(idEntreprise);
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public MvtStkDto entreeStock(MvtStkDto dto) {
@@ -77,13 +70,7 @@ public class MvtStkController implements MvtStkApi {
     }
 
     /**
-     * Enregistre une sortie de stock.
-     * <p>
-     * Traite une sortie de stock basée sur les informations fournies dans le DTO.
-     * </p>
-     *
-     * @param dto l'objet de transfert de données contenant les informations sur la sortie de stock
-     * @return l'objet de transfert de données mis à jour après l'ajout de la sortie de stock
+     * {@inheritDoc}
      */
     @Override
     public MvtStkDto sortieStock(MvtStkDto dto) {
@@ -91,13 +78,7 @@ public class MvtStkController implements MvtStkApi {
     }
 
     /**
-     * Enregistre une correction positive de stock.
-     * <p>
-     * Traite une correction positive de stock basée sur les informations fournies dans le DTO.
-     * </p>
-     *
-     * @param dto l'objet de transfert de données contenant les informations sur la correction positive de stock
-     * @return l'objet de transfert de données mis à jour après l'ajout de la correction positive
+     * {@inheritDoc}
      */
     @Override
     public MvtStkDto correctionStockPos(MvtStkDto dto) {
@@ -105,13 +86,7 @@ public class MvtStkController implements MvtStkApi {
     }
 
     /**
-     * Enregistre une correction négative de stock.
-     * <p>
-     * Traite une correction négative de stock basée sur les informations fournies dans le DTO.
-     * </p>
-     *
-     * @param dto l'objet de transfert de données contenant les informations sur la correction négative de stock
-     * @return l'objet de transfert de données mis à jour après l'ajout de la correction négative
+     * {@inheritDoc}
      */
     @Override
     public MvtStkDto correctionStockNeg(MvtStkDto dto) {

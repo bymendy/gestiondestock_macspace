@@ -1,5 +1,6 @@
 package com.macspace.gestiondestock.repository;
 
+import com.macspace.gestiondestock.model.EtatIntervention;
 import com.macspace.gestiondestock.model.InterventionClient;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -8,29 +9,40 @@ import java.util.Optional;
 
 /**
  * Repository pour gérer les entités {@link InterventionClient}.
- * Fournit des méthodes pour effectuer des opérations CRUD et des requêtes personnalisées sur la table InterventionClient.
+ * Fournit les opérations CRUD et des requêtes
+ * personnalisées sur la table 'interventionclient'.
  */
 public interface InterventionClientRepository extends JpaRepository<InterventionClient, Integer> {
 
     /**
-     * Trouve une entité {@link InterventionClient} en fonction de son code.
-     * <p>
-     * Utilise une recherche par code d'intervention client. Retourne un {@link Optional} qui peut contenir l'entité trouvée ou être vide si aucune intervention client n'est trouvée pour le code spécifié.
-     * </p>
+     * Trouve une intervention client par son code.
      *
-     * @param code le code de l'intervention client à rechercher.
-     * @return un {@link Optional} contenant l'entité {@link InterventionClient} correspondant au code fourni, ou vide si aucune intervention client n'est trouvée.
+     * @param code Le code de l'intervention client.
+     * @return Une {@link Optional} contenant l'intervention si trouvée.
      */
     Optional<InterventionClient> findInterventionClientByCode(String code);
 
     /**
-     * Trouve toutes les entités {@link InterventionClient} associées à un identifiant de client donné.
-     * <p>
-     * Utilise une recherche par identifiant de client pour récupérer toutes les interventions clients associées à cet identifiant. Retourne une liste d'entités {@link InterventionClient}.
-     * </p>
+     * Trouve toutes les interventions d'un client.
      *
-     * @param clientId l'identifiant du client pour lequel les interventions doivent être trouvées.
-     * @return une liste d'entités {@link InterventionClient} associées au client spécifié.
+     * @param clientId L'identifiant du client.
+     * @return La liste des interventions du client.
      */
     List<InterventionClient> findAllByClientId(Integer clientId);
+
+    /**
+     * Trouve toutes les interventions par état.
+     *
+     * @param etatIntervention L'état de l'intervention.
+     * @return La liste des interventions correspondantes.
+     */
+    List<InterventionClient> findAllByEtatIntervention(EtatIntervention etatIntervention);
+
+    /**
+     * Trouve toutes les interventions clients d'une entreprise.
+     *
+     * @param idEntreprise L'identifiant de l'entreprise.
+     * @return La liste des interventions de l'entreprise.
+     */
+    List<InterventionClient> findAllByIdEntreprise(Integer idEntreprise);
 }

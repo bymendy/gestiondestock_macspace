@@ -1,94 +1,85 @@
 package com.macspace.gestiondestock.config;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.service.ApiKey;
-import springfox.documentation.service.AuthorizationScope;
-import springfox.documentation.service.SecurityReference;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spi.service.contexts.SecurityContext;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 /**
- * Configuration pour Swagger, un outil de documentation d'API REST.
- * Cette classe configure Swagger pour générer la documentation de l'API et inclut des mécanismes de sécurité pour l'authentification JWT.
+ * Configuration Springdoc OpenAPI pour MacSpace.
+ * Génère la documentation de l'API REST et configure
+ * l'authentification JWT dans Swagger UI.
  */
-//@Configuration
-//EnableSwagger2
+@Configuration
 public class SwaggerConfiguration {
 
     /**
-     * Nom de l'en-tête HTTP utilisé pour l'authentification.
+     * Nom du schéma de sécurité JWT.
      */
-    //public static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String SECURITY_SCHEME_NAME = "BearerAuth";
 
     /**
-     * Configure et retourne un bean {@link Docket} pour Swagger.
-     * Ce bean spécifie les détails de l'API et les paramètres de sécurité.
+     * Configure et retourne le bean OpenAPI pour Springdoc.
+     * Définit les informations de l'API et le schéma
+     * de sécurité JWT Bearer.
      *
-     * @return Un bean {@link Docket} configuré pour Swagger.
+     * @return La configuration OpenAPI complète.
      */
-    //@Bean
-    /** public Docket api() {
-     return new Docket(DocumentationType.SWAGGER_2)
-     .apiInfo(
-     new ApiInfoBuilder()
-     .description("Gestion de stock API documentation")
-     .title("Gestion de stock Application REST API")
-     .build()
-     )
-     .groupName("REST API V1")
-     .securityContexts(Collections.singletonList(securityContext()))
-     .securitySchemes(Collections.singletonList(apiKey()))
-     .useDefaultResponseMessages(false)
-     .select()
-     .apis(RequestHandlerSelectors.basePackage("com.macspace.gestiondestock"))
-     .paths(PathSelectors.any())
-     .build();
-     } */
+    @Bean
+    public OpenAPI openAPI() {
+        return new OpenAPI()
+                .info(apiInfo())
+                .addSecurityItem(
+                        new SecurityRequirement()
+                                .addList(SECURITY_SCHEME_NAME))
+                .components(
+                        new Components()
+                                .addSecuritySchemes(
+                                        SECURITY_SCHEME_NAME,
+                                        securityScheme()));
+    }
 
     /**
-     * Configure et retourne un objet {@link ApiKey} pour JWT.
-     * Ce bean définit le schéma de sécurité pour l'authentification JWT en utilisant l'en-tête HTTP.
+     * Définit les informations générales de l'API MacSpace.
      *
-     * @return Un objet {@link ApiKey} configuré pour JWT.
+     * @return Les informations de l'API.
      */
-    //private ApiKey apiKey() {
-    // return new ApiKey("JWT", AUTHORIZATION_HEADER, "header");
-    // }
+    private Info apiInfo() {
+        return new Info()
+                .title("MacSpace API")
+                .description(
+                        "API REST pour la gestion des installations "
+                                + "de sécurité MacSpace. "
+                                + "Gestion des interventions, produits, "
+                                + "clients et fournisseurs.")
+                .version("v1.0")
+                .contact(new Contact()
+                        .name("Mac Sécurité")
+                        .email("contact@macsecurite.fr"))
+                .license(new License()
+                        .name("Propriétaire")
+                        .url("https://macsecurite.fr"));
+    }
 
     /**
-     * Configure et retourne un objet {@link SecurityContext} pour Swagger.
-     * Ce bean définit le contexte de sécurité pour l'authentification JWT.
+     * Configure le schéma de sécurité JWT Bearer pour Swagger.
+     * Permet de tester les endpoints sécurisés directement
+     * depuis Swagger UI.
      *
-     * @return Un objet {@link SecurityContext} configuré pour Swagger.
+     * @return Le schéma de sécurité JWT.
      */
-    //private SecurityContext securityContext() {
-    // return SecurityContext.builder()
-    //     .securityReferences(defaultAuth())
-    //      .build();
-    // }
-
-    /**
-     * Retourne la liste des références de sécurité par défaut pour JWT.
-     * Cette méthode définit les autorisations globales pour l'accès à l'API.
-     *
-     * @return Une liste de {@link SecurityReference} pour JWT.
-     */
-    /**List<SecurityReference> defaultAuth() {
-     AuthorizationScope authorizationScope
-     = new AuthorizationScope("global", "accessEverything");
-     AuthorizationScope[] authorizationScopes = new AuthorizationScope[1];
-     authorizationScopes[0] = authorizationScope;
-     return Collections.singletonList(
-     new SecurityReference("JWT", authorizationScopes));
-     }*/
-
+    private SecurityScheme securityScheme() {
+        return new SecurityScheme()
+                .name(SECURITY_SCHEME_NAME)
+                .type(SecurityScheme.Type.HTTP)
+                .scheme("bearer")
+                .bearerFormat("JWT")
+                .description(
+                        "Entrez votre token JWT : Bearer {token}");
+    }
 }

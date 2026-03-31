@@ -1,18 +1,18 @@
 package com.macspace.gestiondestock.handlers;
 
 import com.macspace.gestiondestock.exception.ErrorCodes;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Objet de Transfert de Données (DTO) pour représenter les informations sur les erreurs.
- * <p>
- * Cet objet est renvoyé lorsqu'une exception est interceptée, fournissant des détails
- * sur l'erreur tels que le code de statut HTTP, le code d'erreur, le message et une liste
- * de détails supplémentaires sur les erreurs.
- * </p>
+ * DTO représentant la réponse d'erreur retournée au frontend dans MacSpace.
+ * Contient le code HTTP, le code métier, le message et les erreurs de validation.
  */
 @Getter
 @Setter
@@ -22,24 +22,24 @@ import java.util.List;
 public class ErrorDto {
 
     /**
-     * Le code de statut HTTP associé à l'erreur.
+     * Le code de statut HTTP associé à l'erreur (400, 404, 409, 500...).
      */
     private Integer httpCode;
 
     /**
-     * Le code d'erreur spécifique de l'énumération {@link ErrorCodes}.
+     * Le code d'erreur métier de l'énumération {@link ErrorCodes}.
      */
     private ErrorCodes code;
 
     /**
-     * Un message descriptif fournissant des détails sur l'erreur.
+     * Message descriptif détaillant la cause de l'erreur.
      */
     private String message;
 
     /**
-     * Une liste de détails supplémentaires sur l'erreur, utile pour le débogage ou la journalisation.
+     * Liste des erreurs de validation détaillées.
+     * Initialisée à une liste vide par défaut.
      */
+    @Builder.Default
     private List<String> errors = new ArrayList<>();
-
-    // Les constructeurs, getters, setters et méthodes du pattern builder sont générés par Lombok.
 }

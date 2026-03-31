@@ -1,41 +1,55 @@
 package com.macspace.gestiondestock.controller.api;
 
 import com.flickr4java.flickr.FlickrException;
-import io.swagger.annotations.Api;
-import java.io.IOException;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 import static com.macspace.gestiondestock.utils.Constants.APP_ROOT;
 
 /**
- * API pour la gestion des photos.
- * <p>
- * Cette interface définit les opérations disponibles pour la gestion des photos, y compris
- * l'enregistrement des photos avec des métadonnées associées.
- * </p>
+ * Interface définissant les endpoints de gestion des photos dans MacSpace.
+ * Utilise Flickr pour le stockage des photos.
  */
-@Api("photos")
+@Tag(name = "Photos",
+        description = "API de gestion des photos via Flickr")
 public interface PhotoApi {
 
     /**
-     * Enregistre une photo avec les métadonnées fournies.
-     * <p>
-     * Cette méthode enregistre une photo en téléchargeant le fichier photo et en
-     * associant des informations telles que le contexte, l'identifiant et le titre.
-     * </p>
+     * Sauvegarde une photo sur Flickr et l'associe à une entité.
      *
-     * @param context le contexte dans lequel la photo est enregistrée (par exemple, "profil", "produit")
-     * @param id l'identifiant associé à la photo (peut être l'identifiant d'un utilisateur, d'un produit, etc.)
-     * @param photo le fichier photo à télécharger
-     * @param title le titre donné à la photo
-     * @return un objet de réponse (type générique, peut être précisé en fonction de l'implémentation)
-     * @throws IOException si une erreur d'entrée/sortie se produit lors de l'enregistrement de la photo
-     * @throws FlickrException si une erreur spécifique à Flickr se produit lors de l'enregistrement
+     * @param context Le contexte de la photo
+     *                (client, fournisseur, produit, entreprise, utilisateur).
+     * @param id      L'identifiant de l'entité associée.
+     * @param photo   Le fichier photo à uploader.
+     * @param title   Le titre de la photo.
+     * @return L'objet mis à jour avec l'URL de la photo.
+     * @throws IOException      Si une erreur d'entrée/sortie se produit.
+     * @throws FlickrException  Si une erreur Flickr se produit.
      */
-    @PostMapping(APP_ROOT + "/save/{id}/{title}/{context}")
+    @Operation(
+            summary = "Sauvegarder une photo",
+            description = "Permet d'uploader une photo sur Flickr et de l'associer à une entité"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Photo sauvegardée avec succès"),
+            @ApiResponse(responseCode = "400",
+                    description = "Fichier invalide ou contexte inconnu"),
+            @ApiResponse(responseCode = "500",
+                    description = "Erreur lors de l'upload sur Flickr")
+    })
+    @PostMapping(value = APP_ROOT + "/photos/save/{id}/{title}/{context}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     Object savePhoto(
             @PathVariable("context") String context,
             @PathVariable("id") Integer id,

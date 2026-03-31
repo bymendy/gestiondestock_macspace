@@ -1,97 +1,113 @@
 package com.macspace.gestiondestock.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.macspace.gestiondestock.model.Adresse;
 import com.macspace.gestiondestock.model.Client;
-import com.macspace.gestiondestock.model.InterventionClient;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * DTO pour l'entité {@link Client} dans MacSpace.
+ * Assure le transfert des données client entre
+ * l'API et les clients externes.
+ */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ClientDto {
+
+    /**
+     * Identifiant unique du client.
+     */
     private Integer id;
 
     /**
-     * Le nom du client.
+     * Nom du client.
      */
     private String nom;
 
     /**
-     * Le prénom du client.
+     * Prénom du client.
      */
     private String prenom;
 
     /**
-     * L'adresse du client.
-     * Utilise l'entité {@link Adresse} en tant que champ composé.
+     * Adresse postale du client.
      */
     private AdresseDto adresse;
 
     /**
-     * La photo du client.
+     * Photo du client (URL Flickr).
      */
     private String photo;
 
     /**
-     * L'adresse e-mail du client.
+     * Adresse e-mail du client.
      */
     private String email;
 
     /**
-     * Le numéro de téléphone du client.
+     * Numéro de téléphone du client.
      */
     private String numTel;
 
     /**
-     * La liste des interventions liées au client.
+     * Identifiant de l'entreprise — multi-tenant.
+     */
+    private Integer idEntreprise;
+
+    /**
+     * Liste des interventions du client.
+     * Ignorée en JSON pour éviter les références circulaires.
      */
     @JsonIgnore
     private List<InterventionClientDto> interventionClients;
 
-
     /**
-     * Convertit une entité Client en un DTO ClientDto.
+     * Convertit une entité {@link Client} en DTO.
      *
-     * @param client L'entité Client.
-     * @return Le DTO ClientDto correspondant.
+     * @param client L'entité à convertir.
+     * @return Le DTO correspondant, ou null si l'entité est null.
      */
     public static ClientDto fromEntity(Client client) {
         if (client == null) {
             return null;
         }
-
         return ClientDto.builder()
                 .id(client.getId())
                 .nom(client.getNom())
                 .prenom(client.getPrenom())
+                .adresse(AdresseDto.fromEntity(client.getAdresse()))
+                .photo(client.getPhoto())
                 .email(client.getEmail())
                 .numTel(client.getNumTel())
-                // Ajouter d'autres champs nécessaires ici
+                .idEntreprise(client.getIdEntreprise())
                 .build();
     }
 
     /**
-     * Convertit un DTO ClientDto en une entité Client.
+     * Convertit un DTO en entité {@link Client}.
      *
-     * @param clientDto Le DTO ClientDto.
-     * @return L'entité Client correspondante.
+     * @param clientDto Le DTO à convertir.
+     * @return L'entité correspondante, ou null si le DTO est null.
      */
     public static Client toEntity(ClientDto clientDto) {
         if (clientDto == null) {
             return null;
         }
-
-        Client client = new Client();
-        client.setId(clientDto.getId());
-        client.setNom(clientDto.getNom());
-        client.setPrenom(clientDto.getPrenom());
-        client.setEmail(clientDto.getEmail());
-        client.setNumTel(clientDto.getNumTel());
-        // Ajouter d'autres champs nécessaires ici
-
+        Client client = Client.builder()
+                .nom(clientDto.getNom())
+                .prenom(clientDto.getPrenom())
+                .adresse(AdresseDto.toEntity(clientDto.getAdresse()))
+                .photo(clientDto.getPhoto())
+                .email(clientDto.getEmail())
+                .numTel(clientDto.getNumTel())
+                .build();
+        client.setIdEntreprise(clientDto.getIdEntreprise());
         return client;
     }
 }

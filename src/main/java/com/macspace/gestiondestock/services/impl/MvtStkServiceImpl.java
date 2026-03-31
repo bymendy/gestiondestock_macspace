@@ -1,14 +1,14 @@
 package com.macspace.gestiondestock.services.impl;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.macspace.gestiondestock.dto.MvtStkDto;
+import com.macspace.gestiondestock.exception.EntityNotFoundException;
 import com.macspace.gestiondestock.exception.ErrorCodes;
 import com.macspace.gestiondestock.exception.InvalidEntityException;
+import com.macspace.gestiondestock.model.MvtStk;
+import com.macspace.gestiondestock.model.Produit;
 import com.macspace.gestiondestock.model.TypeMvtStk;
 import com.macspace.gestiondestock.repository.MvtStkRepository;
+import com.macspace.gestiondestock.repository.ProduitRepository;
 import com.macspace.gestiondestock.services.MvtStkService;
 import com.macspace.gestiondestock.services.ProduitService;
 import com.macspace.gestiondestock.validator.MvtStkValidator;
@@ -16,13 +16,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 /**
- * Implémentation du service {@link MvtStkService}.
- * <p>
- * Cette classe gère les mouvements de stock (entrée, sortie, et corrections) en interagissant avec le dépôt
- * {@link MvtStkRepository} et le service {@link ProduitService}. Elle utilise le validateur {@link MvtStkValidator}
- * pour s'assurer que les mouvements de stock sont valides avant de les enregistrer.
- * </p>
+ * Implémentation du service pour la gestion des mouvements de stock dans MacSpace.
+ *
+ * Gère les entrées, sorties et corrections de stock.
+ * Le produit est récupéré directement depuis le repository
+ * pour éviter les problèmes d'entités détachées JPA.
  */
 @Service
 @Slf4j
@@ -30,53 +32,70 @@ public class MvtStkServiceImpl implements MvtStkService {
 
     private final MvtStkRepository repository;
     private final ProduitService produitService;
+    private final ProduitRepository produitRepository;
 
     /**
-     * Constructeur de {@link MvtStkServiceImpl}.
+     * Constructeur avec injection de dépendances.
      *
-     * @param repository le dépôt des mouvements de stock
-     * @param produitService le service pour gérer les produits
+     * @param repository       Repository JPA des mouvements de stock.
+     * @param produitService   Service de gestion des produits.
+     * @param produitRepository Repository JPA des produits.
      */
     @Autowired
-    public MvtStkServiceImpl(MvtStkRepository repository, ProduitService produitService) {
+    public MvtStkServiceImpl(
+            MvtStkRepository repository,
+            ProduitService produitService,
+            ProduitRepository produitRepository) {
         this.repository = repository;
         this.produitService = produitService;
+        this.produitRepository = produitRepository;
     }
 
     /**
-     * Retourne le stock réel d'un produit spécifié par son ID.
-     *
-     * @param idProduit l'ID du produit
-     * @return la quantité réelle du stock pour le produit spécifié
+     * {@inheritDoc}
      */
     @Override
     public BigDecimal stockReelProduit(Integer idProduit) {
         if (idProduit == null) {
-            log.warn("ID Produit is NULL");
-            return BigDecimal.valueOf(-1);
+            log.warn("L'ID du produit est nul");
+            return BigDecimal.ZERO;
         }
         produitService.findById(idProduit);
         return repository.stockReelProduit(idProduit);
     }
 
     /**
-     * Retourne la liste des mouvements de stock pour un produit spécifié par son ID.
-     *
-     * @param idArticle l'ID du produit
-     * @return la liste des mouvements de stock pour le produit spécifié
+     * {@inheritDoc}
      */
     @Override
-    public List<MvtStkDto> mvtStkProduit(Integer idArticle) {
-        return repository.findAllByProduitId(idArticle).stream()
+    public List<MvtStkDto> mvtStkProduit(Integer idProduit) {
+        return repository.findAllByProduitId(idProduit).stream()
                 .map(MvtStkDto::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
-     * Gère l'entrée de stock pour un produit en utilisant les informations fournies dans le DTO.
-     *
-     * @param dto le DTO contenant les informations sur le mouvement d'entrée de stock
-     * @return le DTO mis à jour après l'enregistrement du mouvement de stock
+     * {@inheritDoc}
+     */
+    @Override
+    public List<MvtStkDto> findAllByTypeMvt(TypeMvtStk typeMvt) {
+        return repository.findAllByTypeMvt(typeMvt).stream()
+                .map(MvtStkDto::fromEntity)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<MvtStkDto> findAllByIdEntreprise(Integer idEntreprise) {
+        return repository.findAllByIdEntreprise(idEntreprise).stream()
+                .map(MvtStkDto::fromEntity)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public MvtStkDto entreeStock(MvtStkDto dto) {
@@ -84,10 +103,7 @@ public class MvtStkServiceImpl implements MvtStkService {
     }
 
     /**
-     * Gère la sortie de stock pour un produit en utilisant les informations fournies dans le DTO.
-     *
-     * @param dto le DTO contenant les informations sur le mouvement de sortie de stock
-     * @return le DTO mis à jour après l'enregistrement du mouvement de stock
+     * {@inheritDoc}
      */
     @Override
     public MvtStkDto sortieStock(MvtStkDto dto) {
@@ -95,10 +111,7 @@ public class MvtStkServiceImpl implements MvtStkService {
     }
 
     /**
-     * Gère la correction positive de stock pour un produit en utilisant les informations fournies dans le DTO.
-     *
-     * @param dto le DTO contenant les informations sur le mouvement de correction positive de stock
-     * @return le DTO mis à jour après l'enregistrement du mouvement de stock
+     * {@inheritDoc}
      */
     @Override
     public MvtStkDto correctionStockPos(MvtStkDto dto) {
@@ -106,28 +119,32 @@ public class MvtStkServiceImpl implements MvtStkService {
     }
 
     /**
-     * Gère la correction négative de stock pour un produit en utilisant les informations fournies dans le DTO.
-     *
-     * @param dto le DTO contenant les informations sur le mouvement de correction négative de stock
-     * @return le DTO mis à jour après l'enregistrement du mouvement de stock
+     * {@inheritDoc}
      */
     @Override
     public MvtStkDto correctionStockNeg(MvtStkDto dto) {
         return sortieNegative(dto, TypeMvtStk.CORRECTION_NEG);
     }
 
+    // ===== Méthodes privées =====
+
     /**
-     * Gère les entrées positives de stock en validant le DTO et en enregistrant le mouvement de stock.
+     * Enregistre un mouvement de stock positif (entrée ou correction positive).
      *
-     * @param dto le DTO contenant les informations sur l'entrée de stock
-     * @param typeMvtStk le type de mouvement de stock (entrée)
-     * @return le DTO mis à jour après l'enregistrement du mouvement de stock
+     * @param dto         Le DTO du mouvement de stock.
+     * @param typeMvtStk  Le type de mouvement.
+     * @return Le DTO sauvegardé.
+     * @throws InvalidEntityException Si le mouvement n'est pas valide.
      */
     private MvtStkDto entreePositive(MvtStkDto dto, TypeMvtStk typeMvtStk) {
         List<String> errors = MvtStkValidator.validate(dto);
         if (!errors.isEmpty()) {
-            log.error("Produit is not valid {}", dto);
-            throw new InvalidEntityException("Le mouvement du stock n'est pas valide", ErrorCodes.MVT_STK_NOT_VALID, errors);
+            log.error("Le mouvement de stock n'est pas valide {}", dto);
+            throw new InvalidEntityException(
+                    "Le mouvement de stock n'est pas valide",
+                    ErrorCodes.MVT_STK_NOT_VALID,
+                    errors
+            );
         }
         dto.setQuantite(
                 BigDecimal.valueOf(
@@ -136,22 +153,27 @@ public class MvtStkServiceImpl implements MvtStkService {
         );
         dto.setTypeMvt(typeMvtStk);
         return MvtStkDto.fromEntity(
-                repository.save(MvtStkDto.toEntity(dto))
+                repository.save(buildMvtStk(dto))
         );
     }
 
     /**
-     * Gère les sorties négatives de stock en validant le DTO et en enregistrant le mouvement de stock.
+     * Enregistre un mouvement de stock négatif (sortie ou correction négative).
      *
-     * @param dto le DTO contenant les informations sur la sortie de stock
-     * @param typeMvtStk le type de mouvement de stock (sortie)
-     * @return le DTO mis à jour après l'enregistrement du mouvement de stock
+     * @param dto         Le DTO du mouvement de stock.
+     * @param typeMvtStk  Le type de mouvement.
+     * @return Le DTO sauvegardé.
+     * @throws InvalidEntityException Si le mouvement n'est pas valide.
      */
     private MvtStkDto sortieNegative(MvtStkDto dto, TypeMvtStk typeMvtStk) {
         List<String> errors = MvtStkValidator.validate(dto);
         if (!errors.isEmpty()) {
-            log.error("Produit is not valid {}", dto);
-            throw new InvalidEntityException("Le mouvement du stock n'est pas valide", ErrorCodes.MVT_STK_NOT_VALID, errors);
+            log.error("Le mouvement de stock n'est pas valide {}", dto);
+            throw new InvalidEntityException(
+                    "Le mouvement de stock n'est pas valide",
+                    ErrorCodes.MVT_STK_NOT_VALID,
+                    errors
+            );
         }
         dto.setQuantite(
                 BigDecimal.valueOf(
@@ -160,7 +182,32 @@ public class MvtStkServiceImpl implements MvtStkService {
         );
         dto.setTypeMvt(typeMvtStk);
         return MvtStkDto.fromEntity(
-                repository.save(MvtStkDto.toEntity(dto))
+                repository.save(buildMvtStk(dto))
         );
+    }
+
+    /**
+     * Construit une entité MvtStk avec le produit attaché à la session Hibernate.
+     *
+     * @param dto Le DTO source.
+     * @return L'entité MvtStk prête à être persistée.
+     * @throws EntityNotFoundException Si le produit n'existe pas.
+     */
+    private MvtStk buildMvtStk(MvtStkDto dto) {
+        Produit produit = produitRepository
+                .findById(dto.getProduit().getId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucun produit avec l'ID "
+                                + dto.getProduit().getId() + " n'a été trouvé",
+                        ErrorCodes.PRODUIT_NOT_FOUND
+                ));
+        MvtStk mvtStk = new MvtStk();
+        mvtStk.setProduit(produit);
+        mvtStk.setDateMvt(dto.getDateMvt());
+        mvtStk.setQuantite(dto.getQuantite());
+        mvtStk.setTypeMvt(dto.getTypeMvt());
+        mvtStk.setSourceMvt(dto.getSourceMvt());
+        mvtStk.setIdEntreprise(dto.getIdEntreprise());
+        return mvtStk;
     }
 }

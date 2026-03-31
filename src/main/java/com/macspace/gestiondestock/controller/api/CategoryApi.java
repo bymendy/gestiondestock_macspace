@@ -1,11 +1,10 @@
 package com.macspace.gestiondestock.controller.api;
 
 import com.macspace.gestiondestock.dto.CategoryDto;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.util.List;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,77 +12,132 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
+
 import static com.macspace.gestiondestock.utils.Constants.APP_ROOT;
 
 /**
- * API for managing categories.
+ * Interface définissant les endpoints de gestion des catégories dans MacSpace.
  */
-@Api("categories")
+@Tag(name = "Catégories",
+        description = "API de gestion des catégories de produits")
 public interface CategoryApi {
 
     /**
-     * Saves a category.
+     * Enregistre ou met à jour une catégorie.
      *
-     * @param dto the category data transfer object
-     * @return the saved or updated category data transfer object
+     * @param dto Le DTO de la catégorie à enregistrer.
+     * @return Le DTO de la catégorie enregistrée.
      */
-    @PostMapping(value = APP_ROOT + "/categories/create", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Enregistrer une categorie", notes = "Cette methode permet d'enregistrer ou modifier une categorie", response = CategoryDto.class)
+    @Operation(
+            summary = "Enregistrer une catégorie",
+            description = "Permet d'enregistrer ou modifier une catégorie"
+    )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "L'objet category cree / modifie"),
-            @ApiResponse(code = 400, message = "L'objet category n'est pas valide")
+            @ApiResponse(responseCode = "200",
+                    description = "Catégorie créée ou modifiée avec succès"),
+            @ApiResponse(responseCode = "400",
+                    description = "Données de la catégorie invalides")
     })
+    @PostMapping(value = APP_ROOT + "/categories/create",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     CategoryDto save(@RequestBody CategoryDto dto);
 
     /**
-     * Finds a category by its ID.
+     * Recherche une catégorie par son identifiant.
      *
-     * @param idCategory the ID of the category
-     * @return the category data transfer object
+     * @param idCategory L'identifiant de la catégorie.
+     * @return Le DTO de la catégorie trouvée.
      */
-    @GetMapping(value = APP_ROOT + "/categories/{idCategory}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Rechercher une categorie par ID", notes = "Cette methode permet de chercher une categorie par son ID", response = CategoryDto.class)
+    @Operation(
+            summary = "Rechercher une catégorie par ID",
+            description = "Permet de chercher une catégorie par son identifiant"
+    )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "La categorie a ete trouve dans la BDD"),
-            @ApiResponse(code = 404, message = "Aucune categorie n'existe dans la BDD avec l'ID fourni")
+            @ApiResponse(responseCode = "200",
+                    description = "Catégorie trouvée"),
+            @ApiResponse(responseCode = "404",
+                    description = "Aucune catégorie trouvée avec cet ID")
     })
+    @GetMapping(value = APP_ROOT + "/categories/{idCategory}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     CategoryDto findById(@PathVariable("idCategory") Integer idCategory);
 
     /**
-     * Finds a category by its code.
+     * Recherche une catégorie par son code.
      *
-     * @param codeCategory the code of the category
-     * @return the category data transfer object
+     * @param codeCategory Le code de la catégorie.
+     * @return Le DTO de la catégorie trouvée.
      */
-    @GetMapping(value = APP_ROOT + "/categories/filter/{codeCategory}", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Rechercher une categorie par CODE", notes = "Cette methode permet de chercher une categorie par son CODE", response = CategoryDto.class)
+    @Operation(
+            summary = "Rechercher une catégorie par code",
+            description = "Permet de chercher une catégorie par son code"
+    )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "L'article a ete trouve dans la BDD"),
-            @ApiResponse(code = 404, message = "Aucun article n'existe dans la BDD avec le CODE fourni")
+            @ApiResponse(responseCode = "200",
+                    description = "Catégorie trouvée"),
+            @ApiResponse(responseCode = "404",
+                    description = "Aucune catégorie trouvée avec ce code")
     })
-    CategoryDto findByCode(@PathVariable("codeCategory") String codeCategory);
+    @GetMapping(value = APP_ROOT + "/categories/filter/{codeCategory}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    CategoryDto findByCode(
+            @PathVariable("codeCategory") String codeCategory);
 
     /**
-     * Finds all categories.
+     * Récupère toutes les catégories.
      *
-     * @return a list of all category data transfer objects
+     * @return La liste de toutes les catégories.
      */
-    @GetMapping(value = APP_ROOT + "/categories/all", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Renvoi la liste des categories", notes = "Cette methode permet de chercher et renvoyer la liste des categories qui existent dans la BDD", responseContainer = "List<CategoryDto>")
+    @Operation(
+            summary = "Lister toutes les catégories",
+            description = "Retourne la liste de toutes les catégories"
+    )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "La liste des article / Une liste vide")
+            @ApiResponse(responseCode = "200",
+                    description = "Liste des catégories ou liste vide")
     })
+    @GetMapping(value = APP_ROOT + "/categories/all",
+            produces = MediaType.APPLICATION_JSON_VALUE)
     List<CategoryDto> findAll();
 
     /**
-     * Deletes a category by its ID.
+     * Récupère toutes les catégories d'une entreprise.
      *
-     * @param idCategory the ID of the category to delete
+     * @param idEntreprise L'identifiant de l'entreprise.
+     * @return La liste des catégories de l'entreprise.
      */
-    @DeleteMapping(value = APP_ROOT + "/categories/delete/{idCategory}")
-    @ApiOperation(value = "Supprimer un article", notes = "Cette methode permet de supprimer une categorie par ID")
+    @Operation(
+            summary = "Lister les catégories d'une entreprise",
+            description = "Retourne la liste des catégories d'une entreprise"
+    )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "La categorie a ete supprime")
+            @ApiResponse(responseCode = "200",
+                    description = "Liste des catégories ou liste vide")
     })
+    @GetMapping(value = APP_ROOT + "/categories/all/{idEntreprise}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    List<CategoryDto> findAllByIdEntreprise(
+            @PathVariable("idEntreprise") Integer idEntreprise);
+
+    /**
+     * Supprime une catégorie par son identifiant.
+     *
+     * @param idCategory L'identifiant de la catégorie à supprimer.
+     */
+    @Operation(
+            summary = "Supprimer une catégorie",
+            description = "Permet de supprimer une catégorie par son identifiant"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200",
+                    description = "Catégorie supprimée avec succès"),
+            @ApiResponse(responseCode = "404",
+                    description = "Catégorie non trouvée"),
+            @ApiResponse(responseCode = "409",
+                    description = "Catégorie utilisée par des produits")
+    })
+    @DeleteMapping(value = APP_ROOT + "/categories/delete/{idCategory}")
     void delete(@PathVariable("idCategory") Integer idCategory);
 }

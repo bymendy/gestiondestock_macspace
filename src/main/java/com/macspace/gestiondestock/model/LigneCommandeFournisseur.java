@@ -2,54 +2,52 @@ package com.macspace.gestiondestock.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 
 /**
- * Classe représentant une ligne de commande fournisseur dans le système de gestion de stock.
- * <p>
- * Cette classe inclut les propriétés suivantes :
- * <ul>
- *   <li>produit : Le produit associé à cette ligne de commande, représenté par une entité {@link Produits}.</li>
- *   <li>commandeFournisseur : La commande fournisseur à laquelle cette ligne appartient, représentée par une entité {@link CommandeFournisseur}.</li>
- * </ul>
- * </p>
- * <p>
- * La classe est annotée avec {@link Entity} et {@link Table} pour indiquer qu'il s'agit
- * d'une entité JPA mappée à la table 'lignecommandefournisseur' de la base de données. Les annotations Lombok
- * {@link Data}, {@link NoArgsConstructor}, {@link AllArgsConstructor}, et {@link EqualsAndHashCode}
- * sont utilisées pour générer automatiquement les méthodes getter, setter, toString, equals et hashCode.
- * </p>
+ * Entité représentant une ligne de commande fournisseur dans MacSpace.
+ *
+ * Chaque ligne est associée à un produit et à une commande fournisseur.
+ * Elle contient la quantité commandée et le prix unitaire négocié.
+ * Mappée à la table 'lignecommandefournisseur' en base de données.
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "lignecommandefournisseur")
 public class LigneCommandeFournisseur extends AbstractEntity {
 
     /**
-     * Le produit associé à cette ligne de commande.
-     * Relation ManyToOne avec l'entité {@link Produits}.
+     * Produit associé à cette ligne de commande.
+     * EAGER pour éviter le LazyInitializationException.
      */
-    @ManyToOne
-    private Produits produit;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_produit", referencedColumnName = "id")
+    private Produit produit;
 
     /**
-     * La commande fournisseur à laquelle cette ligne appartient.
-     * Relation ManyToOne avec l'entité {@link CommandeFournisseur}.
+     * Commande fournisseur à laquelle cette ligne appartient.
+     * LAZY — on n'a pas besoin de la commande dans la ligne.
      */
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_commande_fournisseur", referencedColumnName = "id")
     private CommandeFournisseur commandeFournisseur;
 
-    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
-    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
-    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
-    private Integer idEntreprise;
-
+    /**
+     * Quantité commandée pour ce produit.
+     */
+    @Column(name = "quantite", nullable = false, precision = 10, scale = 2)
     private BigDecimal quantite;
 
+    /**
+     * Prix unitaire du produit pour cette commande.
+     */
+    @Column(name = "prix_unitaire", nullable = false, precision = 10, scale = 2)
     private BigDecimal prixUnitaire;
 }

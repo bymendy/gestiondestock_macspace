@@ -1,53 +1,78 @@
 package com.macspace.gestiondestock.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.macspace.gestiondestock.model.Adresse;
-import com.macspace.gestiondestock.model.CommandeFournisseur;
 import com.macspace.gestiondestock.model.Fournisseur;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * DTO pour l'entité {@link Fournisseur} dans MacSpace.
+ * Assure le transfert des données fournisseur entre
+ * l'API et les clients externes.
+ */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class FournisseurDto {
+
+    /**
+     * Identifiant unique du fournisseur.
+     */
     private Integer id;
 
     /**
-     * Le nom du fournisseur.
+     * Nom du fournisseur.
      */
     private String nom;
 
     /**
-     * Le prénom du fournisseur.
+     * Prénom du fournisseur.
      */
     private String prenom;
 
+    /**
+     * Adresse postale du fournisseur.
+     */
     private AdresseDto adresse;
 
     /**
-     * La photo du fournisseur.
+     * Photo du fournisseur (URL Flickr).
      */
     private String photo;
 
     /**
-     * L'adresse email du fournisseur.
+     * Adresse email du fournisseur.
      */
-    private String mail;
+    private String email;
 
     /**
-     * Le numéro de téléphone du fournisseur.
+     * Numéro de téléphone du fournisseur.
      */
     private String numTel;
 
+    /**
+     * Identifiant de l'entreprise — multi-tenant.
+     */
     private Integer idEntreprise;
 
-
+    /**
+     * Liste des commandes du fournisseur.
+     * Ignorée en JSON pour éviter les références circulaires.
+     */
     @JsonIgnore
     private List<CommandeFournisseurDto> commandeFournisseurs;
 
+    /**
+     * Convertit une entité {@link Fournisseur} en DTO.
+     *
+     * @param fournisseur L'entité à convertir.
+     * @return Le DTO correspondant, ou null si l'entité est null.
+     */
     public static FournisseurDto fromEntity(Fournisseur fournisseur) {
         if (fournisseur == null) {
             return null;
@@ -56,28 +81,33 @@ public class FournisseurDto {
                 .id(fournisseur.getId())
                 .nom(fournisseur.getNom())
                 .prenom(fournisseur.getPrenom())
-                .adresse(AdresseDto.fromEntity(fournisseur.getAdresse()))
+                .adresse(AdresseDto.fromEntity(fournisseur.getAdresse())) // ← Remis
                 .photo(fournisseur.getPhoto())
-                .mail(fournisseur.getMail())
+                .email(fournisseur.getEmail())
                 .numTel(fournisseur.getNumTel())
                 .idEntreprise(fournisseur.getIdEntreprise())
                 .build();
     }
 
+    /**
+     * Convertit un DTO en entité {@link Fournisseur}.
+     *
+     * @param dto Le DTO à convertir.
+     * @return L'entité correspondante, ou null si le DTO est null.
+     */
     public static Fournisseur toEntity(FournisseurDto dto) {
         if (dto == null) {
             return null;
         }
-        Fournisseur fournisseur = new Fournisseur();
-        fournisseur.setId(dto.getId());
-        fournisseur.setNom(dto.getNom());
-        fournisseur.setPrenom(dto.getPrenom());
-        fournisseur.setAdresse(AdresseDto.toEntity(dto.getAdresse()));
-        fournisseur.setPhoto(dto.getPhoto());
-        fournisseur.setMail(dto.getMail());
-        fournisseur.setNumTel(dto.getNumTel());
+        Fournisseur fournisseur = Fournisseur.builder()
+                .nom(dto.getNom())
+                .prenom(dto.getPrenom())
+                .adresse(AdresseDto.toEntity(dto.getAdresse()))
+                .photo(dto.getPhoto())
+                .email(dto.getEmail())
+                .numTel(dto.getNumTel())
+                .build();
         fournisseur.setIdEntreprise(dto.getIdEntreprise());
-
         return fournisseur;
     }
 }

@@ -1,24 +1,36 @@
 package com.macspace.gestiondestock.dto.auth;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * Représente la réponse d'authentification retournée après une tentative d'authentification réussie.
- * <p>
- * Cette classe encapsule les détails nécessaires pour que l'utilisateur puisse accéder aux ressources protégées.
- * </p>
+ * DTO représentant la réponse d'authentification dans MacSpace.
+ * Retournée après une authentification réussie,
+ * elle contient le token JWT et les informations de session.
  */
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AuthenticationResponse {
 
     /**
-     * Le jeton d'accès (token) attribué à l'utilisateur après une authentification réussie.
-     * <p>
-     * Ce jeton est généralement utilisé pour autoriser les requêtes ultérieures aux endpoints sécurisés de l'application.
-     * </p>
+     * Token JWT d'accès attribué après authentification.
+     * Utilisé pour autoriser les requêtes aux endpoints sécurisés.
      */
     private String accessToken;
 
+    /**
+     * Type du token — toujours "Bearer" pour JWT.
+     */
+    @Builder.Default
+    private String tokenType = "Bearer";
+
+    /**
+     * Identifiant de l'entreprise de l'utilisateur connecté.
+     * Utilisé pour le support multi-tenant.
+     */
+    private Integer idEntreprise;
 }

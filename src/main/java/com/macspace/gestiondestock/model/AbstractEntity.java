@@ -1,44 +1,32 @@
 package com.macspace.gestiondestock.model;
 
-import java.io.Serializable;
-import java.time.Instant;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.io.Serializable;
+import java.time.Instant;
 
 /**
  * Classe abstraite représentant une entité de base avec des propriétés
- * communes à toutes les entités de l'application.
- * <p>
- * Cette classe inclut les propriétés suivantes :
- * <ul>
- *   <li>id : Identifiant unique de l'entité.</li>
- *   <li>creationDate : Date de création de l'entité.</li>
- *   <li>lastUpdateDate : Date de la dernière modification de l'entité.</li>
- * </ul>
- * </p>
- * <p>
- * Les annotations {@link CreatedDate} et {@link LastModifiedDate} sont utilisées
- * pour gérer automatiquement les dates de création et de dernière modification.
- * Les annotations {@link JsonIgnore} sont utilisées pour ignorer ces champs lors
- * de la sérialisation JSON.
- * </p>
- * <p>
- * La classe implémente {@link Serializable} pour permettre la sérialisation des instances.
- * Elle est également annotée avec {@link MappedSuperclass} pour indiquer qu'il s'agit
- * d'une classe de base mappée, et avec {@link EntityListeners} pour spécifier
- * l'utilisation de l'audit automatique avec {@link AuditingEntityListener}.
- * </p>
- * <p>
- * Les annotations Lombok {@link Data} sont utilisées pour générer automatiquement
- * les méthodes getter, setter, toString, equals et hashCode.
- * </p>
+ * communes à toutes les entités de l'application MacSpace.
+ *
+ * Champs communs :
+ * - id              : Identifiant unique auto-généré
+ * - creationDate    : Date de création (automatique)
+ * - lastUpdateDate  : Date de dernière modification (automatique)
+ * - idEntreprise    : Identifiant de l'entreprise liée (multi-tenant)
  */
-@Data
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class AbstractEntity implements Serializable {
@@ -47,7 +35,6 @@ public abstract class AbstractEntity implements Serializable {
 
     /**
      * Identifiant unique de l'entité.
-     * Généré automatiquement par la base de données.
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,38 +42,45 @@ public abstract class AbstractEntity implements Serializable {
 
     /**
      * Date de création de l'entité.
-     * Gérée automatiquement par Spring Data JPA.
      */
     @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(name = "creation_date", nullable = false, updatable = false)
+    @JsonIgnore
     private Instant creationDate;
 
-    /**
-     * Attribut technique à ajouter pour chaque entité sauf pour Entreprise et Utilisateur.
-     */
-    private Integer idEntreprise;
 
     /**
      * Date de la dernière modification de l'entité.
-     * Gérée automatiquement par Spring Data JPA.
      */
     @LastModifiedDate
-    @Column(nullable = false)
+    @Column(name = "last_update_date", nullable = false)
+    @JsonIgnore
     private Instant lastUpdateDate;
 
     /**
-     * Méthode appelée avant que l'entité ne soit insérée dans la base de données.
-     * Assure que la date de création est bien initialisée.
+     * Identifiant de l'entreprise propriétaire de l'entité.
+     * Utilisé pour la gestion multi-entreprise.
+     */
+    @Column(name = "id_entreprise")
+    private Integer idEntreprise;
+
+
+    /**
+     * Initialise les dates avant la première persistance.
      */
     @PrePersist
     protected void onCreate() {
-        this.creationDate = Instant.now();
-        this.lastUpdateDate = Instant.now();
+        if (this.creationDate == null) {
+            this.creationDate = Instant.now();
+        }
+        if (this.lastUpdateDate == null) {
+            this.lastUpdateDate = Instant.now();
+        }
     }
 
+
     /**
-     * Méthode appelée avant que l'entité ne soit mise à jour dans la base de données.
-     * Met à jour la date de la dernière modification.
+     * Met à jour la date de modification avant chaque mise à jour.
      */
     @PreUpdate
     protected void onUpdate() {

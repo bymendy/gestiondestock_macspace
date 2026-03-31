@@ -1,30 +1,32 @@
 package com.macspace.gestiondestock.validator;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.macspace.gestiondestock.dto.CommandeFournisseurDto;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Validateur pour les objets {@link CommandeFournisseurDto}.
- * <p>
- * Cette classe fournit des méthodes pour valider les données d'une commande fournisseur afin
- * de s'assurer que toutes les informations requises sont présentes et correctes avant de procéder
- * aux opérations suivantes.
- * </p>
+ * Validator pour l'entité {@link CommandeFournisseurDto} dans MacSpace.
+ * Vérifie que les données de commande fournisseur sont complètes
+ * et valides avant tout traitement ou persistance.
  */
 public class CommandeFournisseurValidator {
 
     /**
-     * Valide un objet {@link CommandeFournisseurDto}.
+     * Valide un {@link CommandeFournisseurDto}.
      * <p>
-     * Cette méthode vérifie si les champs essentiels de la commande fournisseur sont correctement
-     * remplis. Les erreurs de validation sont retournées sous forme de liste de chaînes de caractères.
-     * </p>
+     * Champs validés :
+     * <ul>
+     *     <li>Code</li>
+     *     <li>Date de commande</li>
+     *     <li>État de la commande</li>
+     *     <li>Fournisseur</li>
+     * </ul>
      *
-     * @param dto l'objet {@link CommandeFournisseurDto} à valider
-     * @return une liste de chaînes de caractères contenant les messages d'erreur de validation
+     * @param dto Le DTO à valider.
+     * @return La liste des erreurs de validation,
+     *         vide si toutes les données sont valides.
      */
     public static List<String> validate(CommandeFournisseurDto dto) {
         List<String> errors = new ArrayList<>();
@@ -32,22 +34,23 @@ public class CommandeFournisseurValidator {
         if (dto == null) {
             errors.add("Veuillez renseigner le code de la commande");
             errors.add("Veuillez renseigner la date de la commande");
-            errors.add("Veuillez renseigner l'etat de la commande");
+            errors.add("Veuillez renseigner l'état de la commande");
             errors.add("Veuillez renseigner le fournisseur");
             return errors;
         }
-
         if (!StringUtils.hasLength(dto.getCode())) {
             errors.add("Veuillez renseigner le code de la commande");
         }
         if (dto.getDateCommande() == null) {
             errors.add("Veuillez renseigner la date de la commande");
         }
-        if (dto.getEtatCommande() == null || !StringUtils.hasLength(dto.getEtatCommande().toString())) {
-            errors.add("Veuillez renseigner l'etat de la commande");
+        if (dto.getEtatCommande() == null) {
+            errors.add("Veuillez renseigner l'état de la commande");
         }
-        if (dto.getFournisseur() == null || dto.getFournisseur().getId() == null) {
+        if (dto.getFournisseur() == null) {
             errors.add("Veuillez renseigner le fournisseur");
+        } else {
+            errors.addAll(FournisseurValidator.validate(dto.getFournisseur()));
         }
 
         return errors;

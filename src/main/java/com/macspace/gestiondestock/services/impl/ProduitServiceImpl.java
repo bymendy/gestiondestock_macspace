@@ -4,125 +4,202 @@ import com.macspace.gestiondestock.dto.ProduitDto;
 import com.macspace.gestiondestock.exception.EntityNotFoundException;
 import com.macspace.gestiondestock.exception.ErrorCodes;
 import com.macspace.gestiondestock.exception.InvalidEntityException;
-import com.macspace.gestiondestock.model.Produits;
+import com.macspace.gestiondestock.model.Category;
+import com.macspace.gestiondestock.model.Fournisseur;
+import com.macspace.gestiondestock.model.Produit;
+import com.macspace.gestiondestock.repository.CategoryRepository;
+import com.macspace.gestiondestock.repository.FournisseurRepository;
 import com.macspace.gestiondestock.repository.ProduitRepository;
 import com.macspace.gestiondestock.services.ProduitService;
-import com.macspace.gestiondestock.validator.ProduitsValidator;
+import com.macspace.gestiondestock.validator.ProduitValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
- * Implémentation du service pour la gestion des produits.
+ * Implémentation du service pour la gestion des produits dans MacSpace.
  * <p>
- * Cette classe implémente les méthodes définies dans l'interface {@link ProduitService}
- * pour fournir les fonctionnalités de création, lecture, mise à jour et suppression (CRUD)
- * des entités {@link ProduitDto}.
+ * La {@link Category} et le {@link Fournisseur} sont récupérés
+ * via leurs repositories avant la persistance du produit,
+ * pour éviter les TransientPropertyValueException JPA.
  * </p>
  */
 @Service
 @Slf4j
 public class ProduitServiceImpl implements ProduitService {
 
-    private ProduitRepository produitRepository;
+    private final ProduitRepository produitRepository;
+    private final CategoryRepository categoryRepository;
+    private final FournisseurRepository fournisseurRepository;
 
+    /**
+     * Constructeur avec injection de dépendances.
+     *
+     * @param produitRepository     Repository JPA des produits.
+     * @param categoryRepository    Repository JPA des catégories.
+     * @param fournisseurRepository Repository JPA des fournisseurs.
+     */
     @Autowired
     public ProduitServiceImpl(
-            ProduitRepository produitRepository
-    ){
+            ProduitRepository produitRepository,
+            CategoryRepository categoryRepository,
+            FournisseurRepository fournisseurRepository) {
         this.produitRepository = produitRepository;
+        this.categoryRepository = categoryRepository;
+        this.fournisseurRepository = fournisseurRepository;
     }
 
     /**
-     * Enregistre un nouveau produit ou met à jour un produit existant.
-     *
-     * @param dto Le produit à enregistrer ou à mettre à jour.
-     * @return Le produit enregistré ou mis à jour.
+     * {@inheritDoc}
+     * Récupère la Category et le Fournisseur via leurs repositories
+     * avant de persister le produit.
+     * UPDATE si id présent, INSERT sinon.
      */
     @Override
     public ProduitDto save(ProduitDto dto) {
-        // TODO: Implémenter la logique pour enregistrer ou mettre à jour un produit
-        List<String> errors = ProduitsValidator.validate(dto);
-        if (!errors.isEmpty()){
-            log.error("Produit is not valid {}", dto);
-            throw new InvalidEntityException("Le produit n'est pas valide", ErrorCodes.PRODUIT_NOT_VALID, errors);
+        List<String> errors = ProduitValidator.validate(dto);
+        if (!errors.isEmpty()) {
+            log.error("Le produit n'est pas valide {}", dto);
+            throw new InvalidEntityException(
+                    "Le produit n'est pas valide",
+                    ErrorCodes.PRODUIT_NOT_VALID,
+                    errors
+            );
         }
-        return ProduitDto.fromEntity(
-                produitRepository.save(
-                        ProduitDto.toEntity(dto)
-                )
-        );
+
+        /* Récupérer la Category depuis la DB */
+        Category category = categoryRepository
+                .findById(dto.getCategory().getId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucune catégorie avec l'ID = "
+                                + dto.getCategory().getId() + " n'a été trouvée",
+                        ErrorCodes.CATEGORY_NOT_FOUND
+                ));
+
+        /* Récupérer le Fournisseur depuis la DB */
+        Fournisseur fournisseur = fournisseurRepository
+                .findById(dto.getFournisseur().getId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucun fournisseur avec l'ID = "
+                                + dto.getFournisseur().getId() + " n'a été trouvé",
+                        ErrorCodes.FOURNISSEUR_NOT_FOUND
+                ));
+
+        /* UPDATE si id présent, INSERT sinon */
+        Produit produit;
+        if (dto.getId() != null) {
+            /* Mode modification - récupérer le produit existant */
+            produit = produitRepository.findById(dto.getId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Aucun produit avec l'ID = " + dto.getId(),
+                            ErrorCodes.PRODUIT_NOT_FOUND
+                    ));
+        } else {
+            /* Mode création */
+            produit = new Produit();
+        }
+
+        produit.setCodeProduit(dto.getCodeProduit());
+        produit.setDesignation(dto.getDesignation());
+        produit.setPrixUnitaireHt(dto.getPrixUnitaireHt());
+        produit.setTauxTva(dto.getTauxTva());
+        produit.setPrixUnitaireTtc(dto.getPrixUnitaireTtc());
+        produit.setPhoto(dto.getPhoto());
+        produit.setCategory(category);
+        produit.setFournisseur(fournisseur);
+        produit.setIdEntreprise(dto.getIdEntreprise());
+
+        return ProduitDto.fromEntity(produitRepository.save(produit));
     }
 
     /**
-     * Recherche un produit par son identifiant unique.
-     *
-     * @param id L'identifiant unique du produit.
-     * @return Le produit correspondant à l'identifiant, ou null si aucun produit n'est trouvé.
+     * {@inheritDoc}
      */
     @Override
     public ProduitDto findById(Integer id) {
-        if (id == null){
-            log.error("Produit ID is null");
+        if (id == null) {
+            log.error("L'ID du produit est nul");
+            return null;
         }
-        // TODO: Implémenter la logique pour rechercher un produit par son identifiant
-        Optional<Produits> produits =produitRepository.findById(id);
-
-        return Optional.of(ProduitDto.fromEntity(produits.get())).orElseThrow(() ->
-                new EntityNotFoundException(
-                        " Aucun produit avec l'ID = "+ id +" n'a ete trouve dans la base de donnée ",
-                        ErrorCodes.PRODUIT_NOT_FOUND)
-        );
+        return produitRepository.findById(id)
+                .map(ProduitDto::fromEntity)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucun produit avec l'ID = " + id + " n'a été trouvé",
+                        ErrorCodes.PRODUIT_NOT_FOUND
+                ));
     }
 
     /**
-     * Recherche un produit par son code unique.
-     *
-     * @param codeProduit Le code unique du produit.
-     * @return Le produit correspondant au code, ou null si aucun produit n'est trouvé.
+     * {@inheritDoc}
      */
     @Override
     public ProduitDto findByCodeProduit(String codeProduit) {
-        if (StringUtils.hasLength(codeProduit)){
-            log.error("Produit ID is null");
+        if (!StringUtils.hasLength(codeProduit)) {
+            log.error("Le code du produit est nul");
+            return null;
         }
-        Optional<Produits> produits= produitRepository.findProduitByCodeProduit(codeProduit);
-        // TODO: Implémenter la logique pour rechercher un produit par son code
-        return Optional.of(ProduitDto.fromEntity(produits.get())).orElseThrow(() ->
-                new EntityNotFoundException(
-                        " Aucun produit avec le CODE = "+ codeProduit +" n'a ete trouve dans la base de donnée ",
-                        ErrorCodes.PRODUIT_NOT_FOUND)
-        );
+        return produitRepository.findProduitByCodeProduit(codeProduit)
+                .map(ProduitDto::fromEntity)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucun produit avec le CODE = " + codeProduit
+                                + " n'a été trouvé",
+                        ErrorCodes.PRODUIT_NOT_FOUND
+                ));
     }
 
     /**
-     * Récupère la liste de tous les produits.
-     *
-     * @return La liste de tous les produits.
+     * {@inheritDoc}
      */
     @Override
     public List<ProduitDto> findAll() {
-        // TODO: Implémenter la logique pour récupérer la liste de tous les produits
         return produitRepository.findAll().stream()
                 .map(ProduitDto::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
-     * Supprime un produit par son identifiant unique.
-     *
-     * @param id L'identifiant unique du produit à supprimer.
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ProduitDto> findAllByCategory(Integer idCategory) {
+        return produitRepository.findAllByCategoryId(idCategory)
+                .stream()
+                .map(ProduitDto::fromEntity)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ProduitDto> findAllByFournisseur(Integer idFournisseur) {
+        return produitRepository.findAllByFournisseurId(idFournisseur)
+                .stream()
+                .map(ProduitDto::fromEntity)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ProduitDto> findAllByIdEntreprise(Integer idEntreprise) {
+        return produitRepository.findAllByIdEntreprise(idEntreprise)
+                .stream()
+                .map(ProduitDto::fromEntity)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public void delete(Integer id) {
-        // TODO: Implémenter la logique pour supprimer un produit par son identifiant
-        if ( id == null){
-            log.error(("Produit ID is null"));
+        if (id == null) {
+            log.error("L'ID du produit est nul");
             return;
         }
         produitRepository.deleteById(id);

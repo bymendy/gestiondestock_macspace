@@ -1,25 +1,26 @@
 package com.macspace.gestiondestock.controller;
 
-import java.util.List;
-
 import com.macspace.gestiondestock.controller.api.ClientApi;
 import com.macspace.gestiondestock.dto.ClientDto;
 import com.macspace.gestiondestock.services.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
- * Classe de contrôleur qui implémente l'interface ClientApi pour gérer les opérations liées aux clients.
+ * Contrôleur REST pour la gestion des clients dans MacSpace.
+ * Implémente les endpoints définis dans {@link ClientApi}.
  */
 @RestController
 public class ClientController implements ClientApi {
 
-    private ClientService clientService;
+    private final ClientService clientService;
 
     /**
-     * Constructeur pour ClientController.
+     * Constructeur avec injection de dépendances.
      *
-     * @param clientService le service pour gérer les opérations sur les clients.
+     * @param clientService Le service de gestion des clients.
      */
     @Autowired
     public ClientController(ClientService clientService) {
@@ -27,10 +28,7 @@ public class ClientController implements ClientApi {
     }
 
     /**
-     * Enregistre un client.
-     *
-     * @param dto le Data Transfer Object (DTO) représentant le client à enregistrer.
-     * @return le DTO du client enregistré.
+     * {@inheritDoc}
      */
     @Override
     public ClientDto save(ClientDto dto) {
@@ -38,10 +36,7 @@ public class ClientController implements ClientApi {
     }
 
     /**
-     * Recherche un client par son ID.
-     *
-     * @param id l'ID du client à rechercher.
-     * @return le DTO du client trouvé.
+     * {@inheritDoc}
      */
     @Override
     public ClientDto findById(Integer id) {
@@ -49,9 +44,15 @@ public class ClientController implements ClientApi {
     }
 
     /**
-     * Recherche tous les clients.
-     *
-     * @return la liste de tous les DTO des clients.
+     * {@inheritDoc}
+     */
+    @Override
+    public ClientDto findByEmail(String email) {
+        return clientService.findByEmail(email);
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public List<ClientDto> findAll() {
@@ -59,9 +60,15 @@ public class ClientController implements ClientApi {
     }
 
     /**
-     * Supprime un client par son ID.
-     *
-     * @param id l'ID du client à supprimer.
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ClientDto> findAllByIdEntreprise(Integer idEntreprise) {
+        return clientService.findAllByIdEntreprise(idEntreprise);
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public void delete(Integer id) {

@@ -1,66 +1,59 @@
 package com.macspace.gestiondestock.validator;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.macspace.gestiondestock.dto.EntrepriseDto;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Validateur pour les objets {@link EntrepriseDto}.
- * <p>
- * Cette classe fournit des méthodes pour valider les données d'une entreprise afin
- * de s'assurer que toutes les informations requises sont présentes et correctes avant de procéder
- * aux opérations suivantes.
- * </p>
+ * Validator pour l'entité {@link EntrepriseDto} dans MacSpace.
+ * Vérifie que les données d'entreprise sont complètes et valides
+ * avant tout traitement ou persistance.
  */
 public class EntrepriseValidator {
 
     /**
-     * Valide un objet {@link EntrepriseDto}.
+     * Valide un {@link EntrepriseDto}.
      * <p>
-     * Cette méthode vérifie si les champs essentiels de l'entreprise sont correctement
-     * remplis. Les erreurs de validation sont retournées sous forme de liste de chaînes de caractères.
-     * La validation de l'adresse associée à l'entreprise est également effectuée en utilisant
-     * le {@link AdresseValidator}.
-     * </p>
+     * Champs validés :
+     * <ul>
+     *     <li>Nom</li>
+     *     <li>Code fiscal</li>
+     *     <li>Email</li>
+     *     <li>Numéro de téléphone</li>
+     *     <li>Adresse</li>
+     * </ul>
      *
-     * @param dto l'objet {@link EntrepriseDto} à valider
-     * @return une liste de chaînes de caractères contenant les messages d'erreur de validation
+     * @param dto Le DTO à valider.
+     * @return La liste des erreurs de validation,
+     *         vide si toutes les données sont valides.
      */
     public static List<String> validate(EntrepriseDto dto) {
         List<String> errors = new ArrayList<>();
 
-        // Si l'objet DTO est nul, ajoute des messages d'erreur pour chaque champ obligatoire
         if (dto == null) {
             errors.add("Veuillez renseigner le nom de l'entreprise");
-            errors.add("Veuillez renseigner la description de l'entreprise");
             errors.add("Veuillez renseigner le code fiscal de l'entreprise");
             errors.add("Veuillez renseigner l'email de l'entreprise");
             errors.add("Veuillez renseigner le numéro de téléphone de l'entreprise");
-            // Validation de l'adresse (qui est nulle ici) ajoutera des erreurs spécifiques
             errors.addAll(AdresseValidator.validate(null));
             return errors;
         }
-
-        // Validation des champs de l'objet DTO
         if (!StringUtils.hasLength(dto.getNom())) {
             errors.add("Veuillez renseigner le nom de l'entreprise");
-        }
-        if (!StringUtils.hasLength(dto.getDescription())) {
-            errors.add("Veuillez renseigner la description de l'entreprise");
         }
         if (!StringUtils.hasLength(dto.getCodeFiscal())) {
             errors.add("Veuillez renseigner le code fiscal de l'entreprise");
         }
         if (!StringUtils.hasLength(dto.getEmail())) {
             errors.add("Veuillez renseigner l'email de l'entreprise");
+        } else if (!dto.getEmail().contains("@")) {
+            errors.add("Veuillez renseigner un email valide pour l'entreprise");
         }
         if (!StringUtils.hasLength(dto.getNumTel())) {
             errors.add("Veuillez renseigner le numéro de téléphone de l'entreprise");
         }
-
-        // Validation de l'adresse associée à l'entreprise
         errors.addAll(AdresseValidator.validate(dto.getAdresse()));
 
         return errors;

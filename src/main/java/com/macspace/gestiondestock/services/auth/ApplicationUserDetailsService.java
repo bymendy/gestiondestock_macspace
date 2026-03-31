@@ -1,54 +1,69 @@
 package com.macspace.gestiondestock.services.auth;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.macspace.gestiondestock.dto.UtilisateurDto;
+import com.macspace.gestiondestock.model.Utilisateur;
 import com.macspace.gestiondestock.model.auth.ExtendedUser;
-import com.macspace.gestiondestock.services.UtilisateurService;
+import com.macspace.gestiondestock.repository.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * Service d'authentification qui charge les détails de l'utilisateur à partir de la base de données.
- * <p>
- * Cette classe implémente l'interface {@link UserDetailsService} de Spring Security, permettant
- * à l'application de récupérer les informations d'authentification d'un utilisateur en fonction de son email.
- * </p>
+ * Service d'authentification qui charge les détails de l'utilisateur
+ * à partir de la base de données pour Spring Security.
+ * Utilise findUtilisateurByEmailWithRoles() pour charger les rôles
+ * eagerly et éviter le LazyInitializationException hors session Hibernate.
  */
 @Service
 public class ApplicationUserDetailsService implements UserDetailsService {
 
     @Autowired
-    @Lazy
-    private UtilisateurService service;
+    private UtilisateurRepository utilisateurRepository;
 
     /**
-     * Charge les détails de l'utilisateur en fonction de l'email fourni.
-     * <p>
-     * Cette méthode est utilisée par Spring Security pour authentifier un utilisateur.
-     * Elle récupère l'utilisateur depuis la base de données via {@link UtilisateurService},
-     * et convertit ses rôles en objets {@link SimpleGrantedAuthority} pour l'authentification.
-     * </p>
+     * Charge les détails de l'utilisateur en fonction de son email.
+     * Utilisé par Spring Security pour l'authentification JWT.
+     * Les rôles sont chargés eagerly via LEFT JOIN FETCH.
      *
-     * @param email l'email de l'utilisateur à authentifier
-     * @return les détails de l'utilisateur sous la forme d'un objet {@link UserDetails}
-     * @throws UsernameNotFoundException si l'utilisateur avec l'email donné n'est pas trouvé
+     * @param email L'email de l'utilisateur à authentifier.
+     * @return Les détails de l'utilisateur sous forme de {@link UserDetails}.
+     * @throws UsernameNotFoundException Si aucun utilisateur n'est trouvé.
      */
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UtilisateurDto utilisateur = service.findByEmail(email);
+    public UserDetails loadUserByUsername(String email)
+            throws UsernameNotFoundException {
 
-        // Création de la liste des autorités (rôles) pour l'utilisateur
+        Utilisateur utilisateur = utilisateurRepository
+                .findUtilisateurByEmailWithRoles(email)
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "Aucun utilisateur trouvé avec l'email : " + email
+                ));
+
+        // Création de la liste des autorités (rôles)
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        utilisateur.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getRoleName())));
+        if (utilisateur.getRoles() != null) {
+            utilisateur.getRoles().forEach(role ->
+                    authorities.add(new SimpleGrantedAuthority(
+                            role.getRoleName().name()
+                    ))
+            );
+        }
 
-        // Retourne un objet ExtendedUser contenant les détails de l'utilisateur pour l'authentification
-        return new ExtendedUser(utilisateur.getEmail(), utilisateur.getPassword(), utilisateur.getEntreprise().getId(), authorities);
+        // Récupération de l'id entreprise
+        Integer idEntreprise = utilisateur.getEntreprise() != null
+                ? utilisateur.getEntreprise().getId()
+                : null;
+
+        return new ExtendedUser(
+                utilisateur.getEmail(),
+                utilisateur.getPassword(),
+                idEntreprise,
+                authorities
+        );
     }
 }

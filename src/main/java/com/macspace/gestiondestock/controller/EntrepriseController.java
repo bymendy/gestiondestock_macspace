@@ -1,27 +1,26 @@
 package com.macspace.gestiondestock.controller;
 
-import java.util.List;
-
 import com.macspace.gestiondestock.controller.api.EntrepriseApi;
 import com.macspace.gestiondestock.dto.EntrepriseDto;
 import com.macspace.gestiondestock.services.EntrepriseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
- * Contrôleur REST pour gérer les entreprises.
- * Implémente l'interface {@link EntrepriseApi} et utilise le service {@link EntrepriseService}
- * pour effectuer les opérations de gestion des entreprises.
+ * Contrôleur REST pour la gestion des entreprises dans MacSpace.
+ * Implémente les endpoints définis dans {@link EntrepriseApi}.
  */
 @RestController
 public class EntrepriseController implements EntrepriseApi {
 
-    private EntrepriseService entrepriseService;
+    private final EntrepriseService entrepriseService;
 
     /**
-     * Constructeur avec injection de dépendance pour {@link EntrepriseService}.
+     * Constructeur avec injection de dépendances.
      *
-     * @param entrepriseService le service des entreprises à injecter.
+     * @param entrepriseService Le service de gestion des entreprises.
      */
     @Autowired
     public EntrepriseController(EntrepriseService entrepriseService) {
@@ -29,10 +28,7 @@ public class EntrepriseController implements EntrepriseApi {
     }
 
     /**
-     * Enregistre ou met à jour une entreprise.
-     *
-     * @param dto le DTO de l'entreprise à enregistrer ou à mettre à jour.
-     * @return le DTO de l'entreprise enregistrée ou mise à jour.
+     * {@inheritDoc}
      */
     @Override
     public EntrepriseDto save(EntrepriseDto dto) {
@@ -40,10 +36,7 @@ public class EntrepriseController implements EntrepriseApi {
     }
 
     /**
-     * Recherche une entreprise par son ID.
-     *
-     * @param id l'ID de l'entreprise à rechercher.
-     * @return le DTO de l'entreprise trouvée.
+     * {@inheritDoc}
      */
     @Override
     public EntrepriseDto findById(Integer id) {
@@ -51,9 +44,31 @@ public class EntrepriseController implements EntrepriseApi {
     }
 
     /**
-     * Récupère la liste de toutes les entreprises.
-     *
-     * @return la liste des DTO des entreprises.
+     * {@inheritDoc}
+     */
+    @Override
+    public EntrepriseDto findByNom(String nom) {
+        return entrepriseService.findByNom(nom);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public EntrepriseDto findByEmail(String email) {
+        return entrepriseService.findByEmail(email);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public EntrepriseDto findByCodeFiscal(String codeFiscal) {
+        return entrepriseService.findByCodeFiscal(codeFiscal);
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public List<EntrepriseDto> findAll() {
@@ -61,9 +76,7 @@ public class EntrepriseController implements EntrepriseApi {
     }
 
     /**
-     * Supprime une entreprise par son ID.
-     *
-     * @param id l'ID de l'entreprise à supprimer.
+     * {@inheritDoc}
      */
     @Override
     public void delete(Integer id) {

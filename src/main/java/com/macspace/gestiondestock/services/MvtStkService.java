@@ -1,65 +1,78 @@
 package com.macspace.gestiondestock.services;
 
 import com.macspace.gestiondestock.dto.MvtStkDto;
+import com.macspace.gestiondestock.model.TypeMvtStk;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Interface pour les services de gestion des mouvements de stock.
- * <p>
- * Cette interface définit les opérations pour gérer les mouvements de stock, y compris les entrées,
- * les sorties et les corrections de stock pour un produit donné.
- * </p>
+ * Interface de service pour la gestion des mouvements de stock dans MacSpace.
+ * Définit les opérations métier disponibles sur les mouvements de stock.
  */
 public interface MvtStkService {
 
     /**
-     * Calcule le stock réel d'un produit en fonction des mouvements de stock.
+     * Calcule le stock réel d'un produit.
      *
-     * @param idProduit l'identifiant du produit dont le stock réel doit être calculé
-     * @return la quantité totale en stock du produit
+     * @param idProduit L'identifiant du produit.
+     * @return La quantité totale en stock du produit.
      */
     BigDecimal stockReelProduit(Integer idProduit);
 
     /**
-     * Récupère la liste des mouvements de stock pour un produit spécifique.
+     * Récupère tous les mouvements de stock d'un produit.
      *
-     * @param idProduit l'identifiant du produit dont les mouvements de stock doivent être récupérés
-     * @return une liste d'objets {@link MvtStkDto} représentant les mouvements de stock du produit
+     * @param idProduit L'identifiant du produit.
+     * @return La liste des mouvements de stock du produit.
      */
     List<MvtStkDto> mvtStkProduit(Integer idProduit);
 
     /**
-     * Enregistre une entrée de stock pour un produit.
+     * Récupère tous les mouvements de stock par type.
      *
-     * @param dto l'objet {@link MvtStkDto} contenant les détails de l'entrée de stock
-     * @return l'objet {@link MvtStkDto} enregistré représentant l'entrée de stock
+     * @param typeMvt Le type de mouvement.
+     * @return La liste des mouvements du type spécifié.
+     */
+    List<MvtStkDto> findAllByTypeMvt(TypeMvtStk typeMvt);
+
+    /**
+     * Récupère tous les mouvements de stock d'une entreprise.
+     *
+     * @param idEntreprise L'identifiant de l'entreprise.
+     * @return La liste des mouvements de l'entreprise.
+     */
+    List<MvtStkDto> findAllByIdEntreprise(Integer idEntreprise);
+
+    /**
+     * Enregistre une entrée de stock.
+     *
+     * @param dto Le DTO du mouvement d'entrée.
+     * @return Le DTO du mouvement enregistré.
      */
     MvtStkDto entreeStock(MvtStkDto dto);
 
     /**
-     * Enregistre une sortie de stock pour un produit.
+     * Enregistre une sortie de stock.
      *
-     * @param dto l'objet {@link MvtStkDto} contenant les détails de la sortie de stock
-     * @return l'objet {@link MvtStkDto} enregistré représentant la sortie de stock
+     * @param dto Le DTO du mouvement de sortie.
+     * @return Le DTO du mouvement enregistré.
      */
     MvtStkDto sortieStock(MvtStkDto dto);
 
     /**
-     * Corrige le stock avec une valeur positive.
+     * Enregistre une correction positive du stock.
      *
-     * @param dto l'objet {@link MvtStkDto} contenant les détails de la correction de stock positive
-     * @return l'objet {@link MvtStkDto} enregistré représentant la correction de stock positive
+     * @param dto Le DTO de la correction positive.
+     * @return Le DTO du mouvement enregistré.
      */
     MvtStkDto correctionStockPos(MvtStkDto dto);
 
     /**
-     * Corrige le stock avec une valeur négative.
+     * Enregistre une correction négative du stock.
      *
-     * @param dto l'objet {@link MvtStkDto} contenant les détails de la correction de stock négative
-     * @return l'objet {@link MvtStkDto} enregistré représentant la correction de stock négative
+     * @param dto Le DTO de la correction négative.
+     * @return Le DTO du mouvement enregistré.
      */
     MvtStkDto correctionStockNeg(MvtStkDto dto);
-
 }

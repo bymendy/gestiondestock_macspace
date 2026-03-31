@@ -1,92 +1,246 @@
 package com.macspace.gestiondestock.services.impl;
 
+import com.macspace.gestiondestock.dto.AdresseDto;
 import com.macspace.gestiondestock.dto.EntrepriseDto;
-import com.macspace.gestiondestock.dto.RolesDto;
 import com.macspace.gestiondestock.dto.UtilisateurDto;
 import com.macspace.gestiondestock.exception.EntityNotFoundException;
-import com.macspace.gestiondestock.exception.InvalidEntityException;
-import com.macspace.gestiondestock.repository.EntrepriseRepository;
 import com.macspace.gestiondestock.exception.ErrorCodes;
-import com.macspace.gestiondestock.repository.RolesRepository;
+import com.macspace.gestiondestock.exception.InvalidEntityException;
+import com.macspace.gestiondestock.model.Adresse;
+import com.macspace.gestiondestock.model.Entreprise;
+import com.macspace.gestiondestock.model.Role;
+import com.macspace.gestiondestock.model.RoleType;
+import com.macspace.gestiondestock.repository.AdresseRepository;
+import com.macspace.gestiondestock.repository.EntrepriseRepository;
+import com.macspace.gestiondestock.repository.RoleRepository;
+import com.macspace.gestiondestock.repository.UtilisateurRepository;
 import com.macspace.gestiondestock.services.EntrepriseService;
 import com.macspace.gestiondestock.services.UtilisateurService;
 import com.macspace.gestiondestock.validator.EntrepriseValidator;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 /**
- * Service d'implémentation pour la gestion des entreprises.
+ * Implémentation du service pour la gestion des entreprises dans MacSpace.
+ *
+ * Gère la création d'une entreprise avec son adresse,
+ * son utilisateur admin et son rôle associé.
+ * Toutes les entités sont persistées dans le bon ordre
+ * pour respecter les contraintes de clé étrangère JPA.
  */
 @Transactional(rollbackOn = Exception.class)
 @Service
 @Slf4j
 public class EntrepriseServiceImpl implements EntrepriseService {
 
-    private EntrepriseRepository entrepriseRepository;
-    private UtilisateurService utilisateurService;
-    private RolesRepository rolesRepository;
+    private final EntrepriseRepository entrepriseRepository;
+    private final UtilisateurService utilisateurService;
+    private final UtilisateurRepository utilisateurRepository;
+    private final RoleRepository rolesRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AdresseRepository adresseRepository;
 
     /**
-     * Constructeur avec injection de dépendances pour les repositories d'entreprises, d'utilisateurs et de rôles.
+     * Constructeur avec injection de dépendances.
      *
-     * @param entrepriseRepository le repository pour les entreprises
-     * @param utilisateurService le service pour les utilisateurs
-     * @param rolesRepository le repository pour les rôles
+     * @param entrepriseRepository  Repository JPA des entreprises.
+     * @param utilisateurService    Service de gestion des utilisateurs.
+     * @param utilisateurRepository Repository JPA des utilisateurs.
+     * @param rolesRepository       Repository JPA des rôles.
+     * @param passwordEncoder       Encodeur de mot de passe BCrypt.
+     * @param adresseRepository     Repository JPA des adresses.
      */
     @Autowired
-    public EntrepriseServiceImpl(EntrepriseRepository entrepriseRepository, UtilisateurService utilisateurService,
-                                 RolesRepository rolesRepository) {
+    public EntrepriseServiceImpl(
+            EntrepriseRepository entrepriseRepository,
+            UtilisateurService utilisateurService,
+            UtilisateurRepository utilisateurRepository,
+            RoleRepository rolesRepository,
+            PasswordEncoder passwordEncoder,
+            AdresseRepository adresseRepository) {
         this.entrepriseRepository = entrepriseRepository;
         this.utilisateurService = utilisateurService;
+        this.utilisateurRepository = utilisateurRepository;
         this.rolesRepository = rolesRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.adresseRepository = adresseRepository;
     }
 
     /**
-     * Enregistre ou met à jour une entreprise.
-     *
-     * @param dto le DTO de l'entreprise à enregistrer ou mettre à jour
-     * @return le DTO de l'entreprise enregistrée ou mise à jour
-     * @throws InvalidEntityException si l'entreprise n'est pas valide
+     * {@inheritDoc}
+     * Ordre de persistance :
+     * 1. Adresse
+     * 2. Entreprise
+     * 3. Utilisateur admin
+     * 4. Rôle ADMIN
      */
     @Override
     public EntrepriseDto save(EntrepriseDto dto) {
         List<String> errors = EntrepriseValidator.validate(dto);
         if (!errors.isEmpty()) {
-            log.error("Entreprise is not valid {}", dto);
-            throw new InvalidEntityException("L'entreprise n'est pas valide", ErrorCodes.ENTREPRISE_NOT_VALID, errors);
+            log.error("L'entreprise n'est pas valide {}", dto);
+            throw new InvalidEntityException(
+                    "L'entreprise n'est pas valide",
+                    ErrorCodes.ENTREPRISE_NOT_VALID,
+                    errors
+            );
         }
+
+        // 1. Sauvegarder l'adresse → récupérer l'entité attachée à la session
+        Adresse adresseSauvegardee = adresseRepository.save(
+                AdresseDto.toEntity(dto.getAdresse())
+        );
+        dto.setAdresse(AdresseDto.fromEntity(adresseSauvegardee));
+
+        // 2. Construire l'entité Entreprise avec l'adresse attachée
+        Entreprise entreprise = new Entreprise();
+        entreprise.setNom(dto.getNom());
+        entreprise.setDescription(dto.getDescription());
+        entreprise.setCodeFiscal(dto.getCodeFiscal());
+        entreprise.setPhoto(dto.getPhoto());
+        entreprise.setEmail(dto.getEmail());
+        entreprise.setNumTel(dto.getNumTel());
+        entreprise.setSiteWeb(dto.getSiteWeb());
+        entreprise.setAdresse(adresseSauvegardee);
+
+        // 3. Sauvegarder l'entreprise
         EntrepriseDto savedEntreprise = EntrepriseDto.fromEntity(
-                entrepriseRepository.save(EntrepriseDto.toEntity(dto))
+                entrepriseRepository.save(entreprise)
         );
 
+        // 4. Créer l'utilisateur admin
         UtilisateurDto utilisateur = fromEntreprise(savedEntreprise);
-
         UtilisateurDto savedUser = utilisateurService.save(utilisateur);
 
-        RolesDto rolesDto = RolesDto.builder()
-                .roleName("ADMIN")
-                .utilisateur(savedUser)
-                .build();
-
-        rolesRepository.save(RolesDto.toEntity(rolesDto));
+        // 5. Assigner le rôle ADMIN avec l'entité Utilisateur attachée à la session
+        Role role = new Role();
+        role.setRoleName(RoleType.ROLE_ADMIN);
+        role.setUtilisateur(
+                utilisateurRepository.findById(savedUser.getId())
+                        .orElseThrow(() -> new EntityNotFoundException(
+                                "Utilisateur non trouvé après sauvegarde",
+                                ErrorCodes.UTILISATEUR_NOT_FOUND
+                        ))
+        );
+        rolesRepository.save(role);
 
         return savedEntreprise;
     }
 
     /**
-     * Convertit un DTO d'entreprise en DTO d'utilisateur.
+     * {@inheritDoc}
+     */
+    @Override
+    public EntrepriseDto findById(Integer id) {
+        if (id == null) {
+            log.error("L'ID de l'entreprise est nul");
+            return null;
+        }
+        return entrepriseRepository.findById(id)
+                .map(EntrepriseDto::fromEntity)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucune entreprise avec l'ID = " + id + " n'a été trouvée",
+                        ErrorCodes.ENTREPRISE_NOT_FOUND
+                ));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public EntrepriseDto findByNom(String nom) {
+        if (nom == null || nom.isBlank()) {
+            log.error("Le nom de l'entreprise est nul");
+            return null;
+        }
+        return entrepriseRepository.findEntrepriseByNom(nom)
+                .map(EntrepriseDto::fromEntity)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucune entreprise avec le nom = " + nom + " n'a été trouvée",
+                        ErrorCodes.ENTREPRISE_NOT_FOUND
+                ));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public EntrepriseDto findByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            log.error("L'email de l'entreprise est nul");
+            return null;
+        }
+        return entrepriseRepository.findEntrepriseByEmail(email)
+                .map(EntrepriseDto::fromEntity)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucune entreprise avec l'email = " + email + " n'a été trouvée",
+                        ErrorCodes.ENTREPRISE_NOT_FOUND
+                ));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public EntrepriseDto findByCodeFiscal(String codeFiscal) {
+        if (codeFiscal == null || codeFiscal.isBlank()) {
+            log.error("Le code fiscal de l'entreprise est nul");
+            return null;
+        }
+        return entrepriseRepository.findEntrepriseByCodeFiscal(codeFiscal)
+                .map(EntrepriseDto::fromEntity)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Aucune entreprise avec le code fiscal = " + codeFiscal + " n'a été trouvée",
+                        ErrorCodes.ENTREPRISE_NOT_FOUND
+                ));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<EntrepriseDto> findAll() {
+        return entrepriseRepository.findAll().stream()
+                .map(EntrepriseDto::fromEntity)
+                .toList();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void delete(Integer id) {
+        if (id == null) {
+            log.error("L'ID de l'entreprise est nul");
+            return;
+        }
+        if (!entrepriseRepository.existsById(id)) {
+            throw new EntityNotFoundException(
+                    "Aucune entreprise avec l'ID = " + id + " n'a été trouvée",
+                    ErrorCodes.ENTREPRISE_NOT_FOUND
+            );
+        }
+        entrepriseRepository.deleteById(id);
+    }
+
+    // ===== Méthodes privées =====
+
+    /**
+     * Crée un DTO utilisateur admin à partir d'une entreprise.
+     * L'utilisateur admin n'a pas d'adresse séparée.
      *
-     * @param dto le DTO de l'entreprise
-     * @return le DTO de l'utilisateur
+     * @param dto Le DTO de l'entreprise source.
+     * @return Le DTO utilisateur admin prêt à être sauvegardé.
      */
     private UtilisateurDto fromEntreprise(EntrepriseDto dto) {
         return UtilisateurDto.builder()
-                .adresse(dto.getAdresse())
+                .adresse(null)
                 .nom(dto.getNom())
                 .prenom(dto.getCodeFiscal())
                 .email(dto.getEmail())
@@ -97,58 +251,11 @@ public class EntrepriseServiceImpl implements EntrepriseService {
     }
 
     /**
-     * Génère un mot de passe aléatoire.
+     * Génère un mot de passe aléatoire encodé avec BCrypt.
      *
-     * @return le mot de passe généré
+     * @return Le mot de passe encodé.
      */
     private String generateRandomPassword() {
-        return "som3R@nd0mP@$$word";
-    }
-
-    /**
-     * Recherche une entreprise par son identifiant.
-     *
-     * @param id l'identifiant de l'entreprise
-     * @return le DTO de l'entreprise trouvée
-     * @throws EntityNotFoundException si aucune entreprise n'est trouvée avec l'identifiant donné
-     */
-    @Override
-    public EntrepriseDto findById(Integer id) {
-        if (id == null) {
-            log.error("Entreprise ID is null");
-            return null;
-        }
-        return entrepriseRepository.findById(id)
-                .map(EntrepriseDto::fromEntity)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Aucune entreprise avec l'ID = " + id + " n'a ete trouve dans la BDD",
-                        ErrorCodes.ENTREPRISE_NOT_FOUND)
-                );
-    }
-
-    /**
-     * Retourne la liste de toutes les entreprises.
-     *
-     * @return la liste des DTOs des entreprises
-     */
-    @Override
-    public List<EntrepriseDto> findAll() {
-        return entrepriseRepository.findAll().stream()
-                .map(EntrepriseDto::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Supprime une entreprise par son identifiant.
-     *
-     * @param id l'identifiant de l'entreprise à supprimer
-     */
-    @Override
-    public void delete(Integer id) {
-        if (id == null) {
-            log.error("Entreprise ID is null");
-            return;
-        }
-        entrepriseRepository.deleteById(id);
+        return passwordEncoder.encode(UUID.randomUUID().toString());
     }
 }

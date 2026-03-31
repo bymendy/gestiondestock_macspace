@@ -2,65 +2,62 @@ package com.macspace.gestiondestock.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
 /**
- * Classe représentant un mouvement de stock dans le système de gestion de stock.
- * <p>
- * Cette classe inclut les propriétés suivantes :
- * <ul>
- *   <li>dateMvt : La date du mouvement de stock.</li>
- *   <li>quantite : La quantité de produits déplacés lors du mouvement.</li>
- *   <li>produit : Le produit associé au mouvement de stock.</li>
- *   <li>typeMvt : Le type de mouvement de stock (entrée, sortie, etc.).</li>
- * </ul>
- * </p>
- * <p>
- * La classe est annotée avec {@link Entity} et {@link Table} pour indiquer qu'il s'agit
- * d'une entité JPA mappée à la table 'mvtstk' de la base de données. Les annotations Lombok
- * {@link Data}, {@link NoArgsConstructor}, {@link AllArgsConstructor}, et {@link EqualsAndHashCode}
- * sont utilisées pour générer automatiquement les méthodes getter, setter, toString, equals et hashCode.
- * </p>
+ * Entité représentant un mouvement de stock dans MacSpace.
+ *
+ * Un mouvement de stock enregistre chaque entrée ou sortie
+ * de produit dans le système (commande fournisseur,
+ * intervention, correction manuelle).
+ * Mappée à la table 'mvtstk' en base de données.
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "mvtstk") // Mouvement de stock
+@Table(name = "mvtstk")
 public class MvtStk extends AbstractEntity {
 
     /**
-     * La date du mouvement de stock.
+     * Date du mouvement de stock.
      */
+    @Column(name = "dateMvt", nullable = false)
     private Instant dateMvt;
 
     /**
-     * La quantité de produits déplacés lors du mouvement.
+     * Quantité de produits déplacés.
      */
+    @Column(name = "quantite", nullable = false,
+            precision = 10, scale = 2)
     private BigDecimal quantite;
 
     /**
-     * Le produit associé au mouvement de stock.
+     * Produit associé au mouvement de stock.
+     * EAGER pour éviter le LazyInitializationException
+     * lors de la conversion en DTO hors session Hibernate.
      */
-    @ManyToOne
-    private Produits produit;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "idProduit")
+    private Produit produit;
 
-    // Attribut technique à ajouter pour chaque entite sauf pour Entreprise et Utilisateur
-    // si on parle de conception UMl ce n'est pas 100% correct de le mettre
-    // si on parle de implementation technique, cette id va simplifier beaucoup les tâches
-    private Integer idEntreprise;
-
+    /**
+     * Source du mouvement de stock.
+     */
     @Enumerated(EnumType.STRING)
+    @Column(name = "sourceMvt")
     private SourceMvtStk sourceMvt;
 
     /**
-     * Le type de mouvement de stock (entrée, sortie, etc.).
+     * Type du mouvement de stock.
      */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "typeMvt", nullable = false)
     private TypeMvtStk typeMvt;
-
-
-
 }
