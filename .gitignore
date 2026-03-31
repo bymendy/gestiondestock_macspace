@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+# ===== FICHIERS SENSIBLES =====
+src/main/resources/application.properties
+src/main/resources/application-prod.properties
+src/main/resources/application-dev.properties
+
+# ===== LOGS =====
+*.log
+hs_err_pid*.log
+replay_pid*.log
