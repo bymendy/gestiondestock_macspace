@@ -1,4 +1,5 @@
 package com.macspace.gestiondestock.services.impl;
+import com.macspace.gestiondestock.annotation.Auditable;
 
 import com.macspace.gestiondestock.dto.AdresseDto;
 import com.macspace.gestiondestock.dto.ClientDto;
@@ -56,6 +57,7 @@ public class ClientServiceImpl implements ClientService {
      * {@inheritDoc}
      * Sauvegarde l'adresse avant le client si elle existe.
      */
+    @Auditable(entite = "client", action = "CREATE_UPDATE")
     @Override
     public ClientDto save(ClientDto dto) {
         List<String> errors = ClientValidator.validate(dto);
@@ -106,6 +108,7 @@ public class ClientServiceImpl implements ClientService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "client", action = "READ")
     @Override
     public ClientDto findById(Integer id) {
         if (id == null) {
@@ -161,6 +164,7 @@ public class ClientServiceImpl implements ClientService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "client", action = "DELETE")
     @Override
     public void delete(Integer id) {
         if (id == null) {
