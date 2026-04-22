@@ -1,6 +1,8 @@
 package com.macspace.gestiondestock.services.impl;
 
 import com.macspace.gestiondestock.dto.ProduitDto;
+import com.macspace.gestiondestock.annotation.Auditable;
+
 import com.macspace.gestiondestock.exception.EntityNotFoundException;
 import com.macspace.gestiondestock.exception.ErrorCodes;
 import com.macspace.gestiondestock.exception.InvalidEntityException;
@@ -58,6 +60,7 @@ public class ProduitServiceImpl implements ProduitService {
      * avant de persister le produit.
      * UPDATE si id présent, INSERT sinon.
      */
+    @Auditable(entite = "produit", action = "CREATE_UPDATE")
     @Override
     public ProduitDto save(ProduitDto dto) {
         List<String> errors = ProduitValidator.validate(dto);
@@ -118,6 +121,7 @@ public class ProduitServiceImpl implements ProduitService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "produit", action = "READ")
     @Override
     public ProduitDto findById(Integer id) {
         if (id == null) {
@@ -196,6 +200,7 @@ public class ProduitServiceImpl implements ProduitService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "produit", action = "DELETE")
     @Override
     public void delete(Integer id) {
         if (id == null) {

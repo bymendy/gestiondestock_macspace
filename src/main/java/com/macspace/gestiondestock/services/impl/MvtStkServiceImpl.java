@@ -1,6 +1,8 @@
 package com.macspace.gestiondestock.services.impl;
 
 import com.macspace.gestiondestock.dto.MvtStkDto;
+import com.macspace.gestiondestock.annotation.Auditable;
+
 import com.macspace.gestiondestock.exception.EntityNotFoundException;
 import com.macspace.gestiondestock.exception.ErrorCodes;
 import com.macspace.gestiondestock.exception.InvalidEntityException;
@@ -97,6 +99,7 @@ public class MvtStkServiceImpl implements MvtStkService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "stock", action = "ENTREE")
     @Override
     public MvtStkDto entreeStock(MvtStkDto dto) {
         return entreePositive(dto, TypeMvtStk.ENTREE);
@@ -105,6 +108,7 @@ public class MvtStkServiceImpl implements MvtStkService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "stock", action = "SORTIE")
     @Override
     public MvtStkDto sortieStock(MvtStkDto dto) {
         return sortieNegative(dto, TypeMvtStk.SORTIE);
@@ -113,6 +117,7 @@ public class MvtStkServiceImpl implements MvtStkService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "stock", action = "CORRECTION_POS")
     @Override
     public MvtStkDto correctionStockPos(MvtStkDto dto) {
         return entreePositive(dto, TypeMvtStk.CORRECTION_POS);
@@ -121,6 +126,7 @@ public class MvtStkServiceImpl implements MvtStkService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "stock", action = "CORRECTION_NEG")
     @Override
     public MvtStkDto correctionStockNeg(MvtStkDto dto) {
         return sortieNegative(dto, TypeMvtStk.CORRECTION_NEG);

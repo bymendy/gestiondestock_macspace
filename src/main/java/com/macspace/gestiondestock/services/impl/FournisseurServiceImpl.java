@@ -1,6 +1,8 @@
 package com.macspace.gestiondestock.services.impl;
 
 import com.macspace.gestiondestock.dto.AdresseDto;
+import com.macspace.gestiondestock.annotation.Auditable;
+
 import com.macspace.gestiondestock.dto.FournisseurDto;
 import com.macspace.gestiondestock.exception.EntityNotFoundException;
 import com.macspace.gestiondestock.exception.ErrorCodes;
@@ -56,6 +58,7 @@ public class FournisseurServiceImpl implements FournisseurService {
      * {@inheritDoc}
      * Sauvegarde l'adresse avant le fournisseur si elle existe.
      */
+    @Auditable(entite = "fournisseur", action = "CREATE_UPDATE")
     @Override
     public FournisseurDto save(FournisseurDto dto) {
         List<String> errors = FournisseurValidator.validate(dto);
@@ -106,6 +109,7 @@ public class FournisseurServiceImpl implements FournisseurService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "fournisseur", action = "READ")
     @Override
     public FournisseurDto findById(Integer id) {
         if (id == null) {
@@ -172,6 +176,7 @@ public class FournisseurServiceImpl implements FournisseurService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "fournisseur", action = "DELETE")
     @Override
     public void delete(Integer id) {
         if (id == null) {

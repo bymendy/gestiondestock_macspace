@@ -1,6 +1,8 @@
 package com.macspace.gestiondestock.services.impl;
 
 import com.macspace.gestiondestock.dto.CategoryDto;
+import com.macspace.gestiondestock.annotation.Auditable;
+
 import com.macspace.gestiondestock.exception.EntityNotFoundException;
 import com.macspace.gestiondestock.exception.ErrorCodes;
 import com.macspace.gestiondestock.exception.InvalidEntityException;
@@ -36,6 +38,7 @@ public class CategoryServiceImpl implements CategoryService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "categorie", action = "CREATE_UPDATE")
     @Override
     public CategoryDto save(CategoryDto dto) {
         List<String> errors = CategoryValidator.validate(dto);
@@ -57,6 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "categorie", action = "READ")
     @Override
     public CategoryDto findById(Integer id) {
         if (id == null) {
@@ -112,6 +116,7 @@ public class CategoryServiceImpl implements CategoryService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "categorie", action = "DELETE")
     @Override
     public void delete(Integer id) {
         if (id == null) {

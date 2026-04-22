@@ -1,4 +1,5 @@
 package com.macspace.gestiondestock.services.impl;
+import com.macspace.gestiondestock.annotation.Auditable;
 
 import com.macspace.gestiondestock.dto.InterventionDto;
 import com.macspace.gestiondestock.dto.LigneInterventionDto;
@@ -86,6 +87,7 @@ public class InterventionServiceImpl implements InterventionService {
      *  * se font dans la même transaction.
      *  * Si une erreur survient, tout est annulé (rollback).
      */
+    @Auditable(entite = "intervention", action = "CREATE_UPDATE")
     @Override
     @Transactional
     public InterventionDto save(InterventionDto dto) {
@@ -228,6 +230,7 @@ public class InterventionServiceImpl implements InterventionService {
     /**
      * {@inheritDoc}
      */
+    @Auditable(entite = "intervention", action = "READ")
     @Override
     public InterventionDto findById(Integer id) {
         if (id == null) {
@@ -308,6 +311,7 @@ public class InterventionServiceImpl implements InterventionService {
      * {@inheritDoc}
      * Empêche la suppression si des lignes sont associées.
      */
+    @Auditable(entite = "intervention", action = "DELETE")
     @Override
     public void delete(Integer id) {
         if (id == null) {
