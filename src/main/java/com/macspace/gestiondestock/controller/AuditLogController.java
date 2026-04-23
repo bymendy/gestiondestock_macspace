@@ -1,6 +1,8 @@
 package com.macspace.gestiondestock.controller;
 
 import com.macspace.gestiondestock.model.audit.AuditLog;
+import com.macspace.gestiondestock.repository.AuditLogRepository;
+
 import com.macspace.gestiondestock.model.auth.ExtendedUser;
 import com.macspace.gestiondestock.services.audit.AuditLogService;
 import lombok.RequiredArgsConstructor;
@@ -23,16 +25,15 @@ import java.util.List;
 public class AuditLogController {
 
     private final AuditLogService auditLogService;
+    private final AuditLogRepository auditLogRepository;
+
 
     /**
      * Récupère tous les logs de l'entreprise connectée.
      */
     @GetMapping
     public ResponseEntity<List<AuditLog>> findAll() {
-        Integer idEntreprise = getIdEntreprise();
-        return ResponseEntity.ok(
-                auditLogService.findByEntreprise(idEntreprise)
-        );
+        return ResponseEntity.ok(auditLogRepository.findAll());
     }
 
     /**
