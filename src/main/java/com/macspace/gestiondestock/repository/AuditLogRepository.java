@@ -2,6 +2,8 @@ package com.macspace.gestiondestock.repository;
 
 import com.macspace.gestiondestock.model.audit.AuditLog;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,13 +15,21 @@ import java.util.List;
 public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
 
     /** Récupère les logs par entreprise */
-    List<AuditLog> findByIdEntrepriseOrderByCreatedAtDesc(Integer idEntreprise);
+    @Query("SELECT a FROM AuditLog a WHERE a.idEntreprise = :idEntreprise ORDER BY a.createdAt DESC")
+    List<AuditLog> findByIdEntrepriseOrderByCreatedAtDesc(
+            @Param("idEntreprise") Integer idEntreprise
+    );
 
     /** Récupère les logs par utilisateur */
-    List<AuditLog> findByUtilisateurIdOrderByCreatedAtDesc(Long utilisateurId);
+    @Query("SELECT a FROM AuditLog a WHERE a.utilisateurId = :utilisateurId ORDER BY a.createdAt DESC")
+    List<AuditLog> findByUtilisateurIdOrderByCreatedAtDesc(
+            @Param("utilisateurId") Long utilisateurId
+    );
 
     /** Récupère les logs par entité */
+    @Query("SELECT a FROM AuditLog a WHERE a.entite = :entite AND a.idEntreprise = :idEntreprise ORDER BY a.createdAt DESC")
     List<AuditLog> findByEntiteAndIdEntrepriseOrderByCreatedAtDesc(
-            String entite, Integer idEntreprise
+            @Param("entite") String entite,
+            @Param("idEntreprise") Integer idEntreprise
     );
 }
