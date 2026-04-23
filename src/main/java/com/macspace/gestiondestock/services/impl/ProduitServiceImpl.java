@@ -121,7 +121,6 @@ public class ProduitServiceImpl implements ProduitService {
     /**
      * {@inheritDoc}
      */
-    @Auditable(entite = "produit", action = "READ")
     @Override
     public ProduitDto findById(Integer id) {
         if (id == null) {

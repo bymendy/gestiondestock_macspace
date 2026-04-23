@@ -60,7 +60,6 @@ public class CategoryServiceImpl implements CategoryService {
     /**
      * {@inheritDoc}
      */
-    @Auditable(entite = "categorie", action = "READ")
     @Override
     public CategoryDto findById(Integer id) {
         if (id == null) {

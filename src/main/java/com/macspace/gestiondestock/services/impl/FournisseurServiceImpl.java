@@ -109,7 +109,6 @@ public class FournisseurServiceImpl implements FournisseurService {
     /**
      * {@inheritDoc}
      */
-    @Auditable(entite = "fournisseur", action = "READ")
     @Override
     public FournisseurDto findById(Integer id) {
         if (id == null) {

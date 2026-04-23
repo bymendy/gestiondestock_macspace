@@ -230,7 +230,6 @@ public class InterventionServiceImpl implements InterventionService {
     /**
      * {@inheritDoc}
      */
-    @Auditable(entite = "intervention", action = "READ")
     @Override
     public InterventionDto findById(Integer id) {
         if (id == null) {

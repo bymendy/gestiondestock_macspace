@@ -108,7 +108,6 @@ public class ClientServiceImpl implements ClientService {
     /**
      * {@inheritDoc}
      */
-    @Auditable(entite = "client", action = "READ")
     @Override
     public ClientDto findById(Integer id) {
         if (id == null) {
