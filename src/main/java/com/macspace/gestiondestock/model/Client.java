@@ -1,6 +1,8 @@
 package com.macspace.gestiondestock.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.macspace.gestiondestock.security.encryption.AesEncryptor;
+import jakarta.persistence.Convert;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -58,12 +60,14 @@ public class Client extends AbstractEntity {
     /**
      * Adresse e-mail du client.
      */
+    @Convert(converter = AesEncryptor.class)
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     /**
      * Numéro de téléphone du client.
      */
+    @Convert(converter = AesEncryptor.class)
     @Column(name = "num_tel")
     private String numTel;
 
