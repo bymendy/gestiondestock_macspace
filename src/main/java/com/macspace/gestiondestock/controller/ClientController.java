@@ -1,4 +1,11 @@
 package com.macspace.gestiondestock.controller;
+import com.macspace.gestiondestock.dto.ClientAnonymiseDto;
+import com.macspace.gestiondestock.model.auth.ExtendedUser;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import java.util.stream.Collectors;
 
 import com.macspace.gestiondestock.controller.api.ClientApi;
 import com.macspace.gestiondestock.dto.ClientDto;
@@ -73,5 +80,25 @@ public class ClientController implements ClientApi {
     @Override
     public void delete(Integer id) {
         clientService.delete(id);
+    }
+
+    /**
+     * Retourne la liste des clients anonymisés pour les exports
+     * et environnements de test — Data Manager MacSpace.
+     */
+    @GetMapping("/gestiondestock/v1/clients/export/anonymise")
+    public ResponseEntity<List<ClientAnonymiseDto>> exportAnonymise() {
+        Authentication auth = SecurityContextHolder
+                .getContext().getAuthentication();
+        Integer idEntreprise = null;
+        if (auth != null && auth.getPrincipal() instanceof ExtendedUser user) {
+            idEntreprise = user.getIdEntreprise();
+        }
+        List<ClientAnonymiseDto> result = clientService
+                .findAllByIdEntreprise(idEntreprise)
+                .stream()
+                .map(ClientAnonymiseDto::fromClient)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(result);
     }
 }
