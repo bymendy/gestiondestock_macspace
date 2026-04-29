@@ -26,13 +26,13 @@ public class Role extends AbstractEntity {
      * Nom/type du rôle.
      */
     @Enumerated(EnumType.STRING)
-    @Column(name = "roleName", nullable = false)
+    @Column(name = "role_name", nullable = false)
     private RoleType roleName;
 
     /**
      * Utilisateur associé à ce rôle.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idUtilisateur")
+    @JoinColumn(name = "id_utilisateur")
     private Utilisateur utilisateur;
 }

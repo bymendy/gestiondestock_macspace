@@ -34,7 +34,11 @@ public class MacSpaceInterceptor implements StatementInspector {
             "from entreprise",
             "from roles",
             "from utilisateur",
-            "from adresse"
+            "from adresse",
+            "from vue_interventions_par_mois",
+            "from vue_performance_techniciens",
+            "from vue_produits_plus_utilises",
+            "from vue_tableau_bord_global"
     };
 
     /**
