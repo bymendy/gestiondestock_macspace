@@ -39,4 +39,8 @@ public class DataWarehouseService {
         log.info("DW — Chargement tableau de bord global");
         return dataWarehouseRepository.getTableauBordGlobal();
     }
+
+    public void initDataWarehouse() {
+        dataWarehouseRepository.initDataWarehouse();
+    }
 }

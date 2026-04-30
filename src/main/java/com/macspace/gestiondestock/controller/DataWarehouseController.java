@@ -73,4 +73,20 @@ public class DataWarehouseController {
         if (!isAdmin()) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         return ResponseEntity.ok(dataWarehouseService.getTableauBordGlobal());
     }
+
+    /**
+     * Initialise le Data Warehouse — endpoint temporaire ADMIN.
+     * À supprimer après la première exécution en production.
+     */
+    @PostMapping("/init")
+    public ResponseEntity<String> initDataWarehouse() {
+        if (!isAdmin()) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        try {
+            dataWarehouseService.initDataWarehouse();
+            return ResponseEntity.ok("Data Warehouse initialisé avec succès !");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erreur : " + e.getMessage());
+        }
+    }
 }
