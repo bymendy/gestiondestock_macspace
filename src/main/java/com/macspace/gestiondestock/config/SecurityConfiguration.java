@@ -130,6 +130,7 @@ public class SecurityConfiguration {
                                 new AntPathRequestMatcher("/**/authenticate"),
                                 new AntPathRequestMatcher("/**/entreprises/create"),
                                 new AntPathRequestMatcher("/**/utilisateurs/create"),
+                                new AntPathRequestMatcher("/**/datawarehouse/init"),
                                 new AntPathRequestMatcher("/api-docs"),
                                 new AntPathRequestMatcher("/api-docs/**"),
                                 new AntPathRequestMatcher("/v2/api-docs"),
