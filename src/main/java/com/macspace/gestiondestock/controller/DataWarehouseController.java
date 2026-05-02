@@ -80,7 +80,6 @@ public class DataWarehouseController {
      */
     @PostMapping("/init")
     public ResponseEntity<String> initDataWarehouse() {
-        if (!isAdmin()) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         try {
             dataWarehouseService.initDataWarehouse();
             return ResponseEntity.ok("Data Warehouse initialisé avec succès !");
