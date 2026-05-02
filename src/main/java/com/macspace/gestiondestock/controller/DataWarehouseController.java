@@ -30,7 +30,9 @@ public class DataWarehouseController {
      */
     private boolean isAdmin() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth != null && auth.getAuthorities().stream()
+        if (auth == null) return false;
+        log.info("DW — Authorities : {}", auth.getAuthorities());
+        return auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
 
