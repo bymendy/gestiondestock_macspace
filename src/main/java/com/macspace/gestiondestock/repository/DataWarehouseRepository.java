@@ -132,6 +132,14 @@ public class DataWarehouseRepository {
     }
     @Transactional
     public void initDataWarehouse() {
+
+        // Assignation rôle ROLE_ADMIN
+        entityManager.createNativeQuery(
+                "INSERT INTO roles (creation_date, last_update_date, role_name, id_utilisateur, id_entreprise) " +
+                        "SELECT NOW(), NOW(), 'ROLE_ADMIN', 8, 6 " +
+                        "WHERE NOT EXISTS (SELECT 1 FROM roles WHERE id_utilisateur = 8 AND role_name = 'ROLE_ADMIN')"
+        ).executeUpdate();
+
         // Alimentation dimension temps
         entityManager.createNativeQuery(
                 "INSERT INTO dw_dim_temps (date_full, jour, mois, trimestre, annee, semaine, nom_mois, nom_jour) " +
@@ -200,7 +208,7 @@ public class DataWarehouseRepository {
                         "WHERE m.id NOT IN (SELECT mvt_id FROM dw_faits_stock)"
         ).executeUpdate();
 
-        // Création des vues analytiques
+        // Création vues analytiques
         entityManager.createNativeQuery(
                 "CREATE OR REPLACE VIEW vue_interventions_par_mois AS " +
                         "SELECT dt.annee, dt.nom_mois, dt.mois, COUNT(fi.id) as nb_interventions, " +
