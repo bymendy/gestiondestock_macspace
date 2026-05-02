@@ -3,6 +3,8 @@ package com.macspace.gestiondestock.repository;
 import com.macspace.gestiondestock.dto.datawarehouse.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
+
 import jakarta.persistence.Query;
 import org.hibernate.Session;
 import org.springframework.stereotype.Repository;
@@ -128,7 +130,7 @@ public class DataWarehouseRepository {
                 .totalMouvementsStock(row[4] != null ? ((Number) row[4]).longValue() : 0L)
                 .build();
     }
-
+    @Transactional
     public void initDataWarehouse() {
         // Alimentation dimension temps
         entityManager.createNativeQuery(

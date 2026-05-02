@@ -3,6 +3,8 @@ package com.macspace.gestiondestock.services;
 import com.macspace.gestiondestock.dto.datawarehouse.*;
 import com.macspace.gestiondestock.repository.DataWarehouseRepository;
 import lombok.RequiredArgsConstructor;
+import jakarta.transaction.Transactional;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +42,7 @@ public class DataWarehouseService {
         return dataWarehouseRepository.getTableauBordGlobal();
     }
 
+    @Transactional
     public void initDataWarehouse() {
         dataWarehouseRepository.initDataWarehouse();
     }
